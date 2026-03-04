@@ -50,7 +50,6 @@
       pointer-events: none;
     }
 
-    /* Modal Styling */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -232,12 +231,12 @@
     .shortcut-icon img {
       width: 26px;
       height: 26px;
-      filter: brightness(0) invert(1); /* Forces SVG icons to pure white */
+      filter: brightness(0) invert(1);
       transition: all 0.3s ease;
     }
 
     .shortcut-icon i {
-      color: #ffffff; /* Forces FontAwesome icons to pure white */
+      color: #ffffff;
       font-size: 22px;
     }
 
@@ -267,24 +266,9 @@
       width: 40px;
       height: 40px;
       border: 3px solid rgba(255,255,255,0.1);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+border-top-color: #ffffff      border-radius: 50%;
+      animation: spin 0.8s linear infinite;    
     }
-    
-    /* Forces SVG images to be pure white */
-.shortcut-icon img {
-  width: 26px;
-  height: 26px;
-  filter: brightness(0) invert(1); 
-  transition: all 0.3s ease;
-}
-
-/* Forces Font Awesome icons to be pure white */
-.shortcut-icon i {
-  color: #ffffff;
-  font-size: 24px; /* Sized to match the visual weight of the images */
-}
 
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
@@ -323,40 +307,39 @@
       </form>
     </div>
 
-<div class="shortcuts" id="shortcuts">
-  <a class="shortcut" data-url="/pages/g.html" tabindex="0">
-    <div class="shortcut-icon">
-      <i class="fa-solid fa-gamepad"></i>
-    </div>
-    <span class="shortcut-label">Games</span>
-  </a>
+    <div class="shortcuts" id="shortcuts">
+      <a class="shortcut" data-url="/pages/g.html" tabindex="0">
+        <div class="shortcut-icon">
+          <i class="fa-solid fa-gamepad"></i>
+        </div>
+        <span class="shortcut-label">Games</span>
+      </a>
 
-  <a class="shortcut" data-url="https://youtube.com" tabindex="0">
-    <div class="shortcut-icon">
-      <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg">
-    </div>
-    <span class="shortcut-label">YouTube</span>
-  </a>
+      <a class="shortcut" data-url="https://youtube.com" tabindex="0">
+        <div class="shortcut-icon">
+          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg">
+        </div>
+        <span class="shortcut-label">YouTube</span>
+      </a>
 
-  <a class="shortcut" data-url="https://github.com" tabindex="0">
-    <div class="shortcut-icon">
-      <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg">
-    </div>
-    <span class="shortcut-label">GitHub</span>
-  </a>
+      <a class="shortcut" data-url="https://github.com" tabindex="0">
+        <div class="shortcut-icon">
+          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg">
+        </div>
+        <span class="shortcut-label">GitHub</span>
+      </a>
 
-  <a class="shortcut" data-url="https://discord.com" tabindex="0">
-    <div class="shortcut-icon">
-      <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg">
-    </div>
-    <span class="shortcut-label">Discord</span>
-  </a>
+      <a class="shortcut" data-url="https://discord.com" tabindex="0">
+        <div class="shortcut-icon">
+          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg">
+        </div>
+        <span class="shortcut-label">Discord</span>
+      </a>
 
-  <div class="shortcut" id="addShortcut" tabindex="0">
-    <div class="shortcut-icon"><i class="fa-solid fa-plus"></i></div>
-    <span class="shortcut-label">Add</span>
-  </div>
-</div>
+      <div class="shortcut" id="addShortcut" tabindex="0">
+        <div class="shortcut-icon"><i class="fa-solid fa-plus"></i></div>
+        <span class="shortcut-label">Add</span>
+      </div>
     </div>
   </div>
 
@@ -372,9 +355,10 @@
       $('#welcomeModal').classList.remove('active');
     };
 
+    // UPDATED NAVIGATION LOGIC
     const nav = url => {
       $('#loader').classList.add('show');
-      setTimeout(() => { window.location.href = url; }, 500);
+      window.parent?.postMessage({ type: 'navigate', url }, '*');
     };
 
     $('#searchForm').onsubmit = e => {
@@ -386,18 +370,21 @@
     $('#shortcuts').onclick = e => {
       const shortcut = e.target.closest('.shortcut[data-url]');
       const addBtn = e.target.closest('#addShortcut');
+      
       if (shortcut) {
+        e.preventDefault(); // Added to prevent default anchor behavior
         nav(shortcut.dataset.url);
       } else if (addBtn) {
         const name = prompt("Shortcut name:");
+        if (!name) return; // Prevent empty names
         let url = prompt("URL:");
-        if (name && url) {
-          if (!/^(http|https):\/\//.test(url)) url = 'https://' + url;
-          const shortcuts = JSON.parse(localStorage.getItem('shortcuts') || '[]');
-          shortcuts.push({ name, url });
-          localStorage.setItem('shortcuts', JSON.stringify(shortcuts));
-          renderCustom();
-        }
+        if (!url) return; // Prevent empty urls
+        if (!/^(http|https):\/\//.test(url)) url = 'https://' + url;
+        
+        const shortcuts = JSON.parse(localStorage.getItem('shortcuts') || '[]');
+        shortcuts.push({ name, url });
+        localStorage.setItem('shortcuts', JSON.stringify(shortcuts));
+        renderCustom();
       }
     };
 
