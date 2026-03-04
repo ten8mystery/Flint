@@ -370,6 +370,11 @@ body {
         <div class="shortcut-icon"><i class="fa-solid fa-gamepad"></i></div>
         <span class="shortcut-label">Games</span>
       </a>
+      
+      <a class="shortcut" href="/pages/a.html">
+        <div class="shortcut-icon"><i class="fa-solid fa-folder"></i></div>
+        <span class="shortcut-label">Apps</span>
+      </a>
 
       <a class="shortcut" data-url="https://youtube.com">
         <div class="shortcut-icon"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg"></div>
@@ -379,6 +384,21 @@ body {
       <a class="shortcut" data-url="https://discord.com">
         <div class="shortcut-icon"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg"></div>
         <span class="shortcut-label">Discord</span>
+      </a>
+
+      <a class="shortcut" data-url="https://tiktok.com">
+        <div class="shortcut-icon"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg"></div>
+        <span class="shortcut-label">TikTok</span>
+      </a>
+      
+      <a class="shortcut" data-url="https://open.spotify.com">
+        <div class="shortcut-icon"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/spotify.svg"></div>
+        <span class="shortcut-label">Spotify</span>
+      </a>
+      
+      <a class="shortcut" data-url="https://scratch.mit.edu">
+        <div class="shortcut-icon"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/scratch.svg"></div>
+        <span class="shortcut-label">Scratch</span>
       </a>
 
       <div class="shortcut" id="addShortcut">
@@ -417,13 +437,10 @@ body {
       $('#welcomeModal').classList.remove('active');
     };
 
-    // NAVIGATION
     const nav = url => {
+    const $ = s => document.querySelector(s);
       $('#loader').classList.add('show');
-      if (window.parent && window.parent !== window) {
-        window.parent.postMessage({ type: 'navigate', url }, '*');
-      }
-      window.location.href = url;
+      window.parent?.postMessage({ type: 'navigate', url }, '*');
     };
 
     // SEARCH
@@ -432,6 +449,7 @@ body {
       const q = $('#searchInput').value.trim();
       if (q) nav($('#engine').value + encodeURIComponent(q));
     };
+
 
     // SHORTCUTS
     $('#shortcuts').onclick = e => {
