@@ -308,7 +308,7 @@ border-top-color: #ffffff      border-radius: 50%;
     </div>
 
     <div class="shortcuts" id="shortcuts">
-      <a class="shortcut" data-url="/pages/g.html" tabindex="0">
+      <a class="shortcut" data-url="pages/g.html" tabindex="0">
         <div class="shortcut-icon">
           <i class="fa-solid fa-gamepad"></i>
         </div>
@@ -378,7 +378,7 @@ border-top-color: #ffffff      border-radius: 50%;
         if (!url) return;
         
         // Only add https if it's a standard web address without a protocol or local path
-        if (!/^(http|https|\/)/.test(url)) url = 'https://' + url;
+if (!url.startsWith('http') && !url.startsWith('/')) url = 'https://' + url;
         
         const shortcuts = JSON.parse(localStorage.getItem('shortcuts') || '[]');
         shortcuts.push({ name, url });
