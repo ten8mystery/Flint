@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Flint</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient-start: #1a1a20;
+      --bg-gradient-end: #0d0d12;
+      --panel-bg: rgba(30, 30, 36, 0.6);
+      --panel-hover: rgba(45, 45, 55, 0.8);
+      --text: #fdfdfd;
+      --text-soft: #a1a1aa;
+      --accent: #e2c044;
+      --discord: #5865F2;
+      --border-light: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(255, 255, 255, 0.15);
+      --shadow-soft: 0 16px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, var(--bg-gradient-start), var(--bg-gradient-end) 80%);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    #particles {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Modal Styling */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.4s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-light);
+      padding: 40px;
+      border-radius: 32px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: var(--shadow-soft);
+      transform: scale(0.9);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-title {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .discord-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--discord);
+      color: white;
+      text-decoration: none;
+      padding: 14px 28px;
+      border-radius: 16px;
+      font-weight: 600;
+      margin-top: 20px;
+      transition: transform 0.2s;
+    }
+
+    .discord-btn:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.1);
+    }
+
+    .close-modal {
+      display: block;
+      margin-top: 20px;
+      color: var(--text-soft);
+      cursor: pointer;
+      font-size: 0.9rem;
+      text-decoration: underline;
+    }
+
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 700px;
+      padding: 20px;
+      z-index: 10;
+      transform: translateY(-5vh);
+    }
+
+    .title-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 2.5rem;
+      gap: 6px;
+    }
+
+    .title {
+      font-size: 3.2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .subtitle {
+      font-size: 1.05rem;
+      color: var(--text-soft);
+    }
+
+    .search-card {
+      width: 100%;
+      max-width: 540px;
+      margin-bottom: 3.5rem;
+      border-radius: 40px;
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-soft);
+      transition: all 0.3s ease;
+    }
+
+    .search-card:focus-within {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px 10px 24px;
+    }
+
+    .search-box input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 1.1rem;
+    }
+
+    .search-box select {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-soft);
+      border: 1px solid var(--border-light);
+      border-radius: 24px;
+      padding: 8px 14px;
+      cursor: pointer;
+    }
+
+    .shortcuts {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 28px 16px;
+      width: 100%;
+    }
+
+    .shortcut {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.2s ease;
+    }
+
+    .shortcut:hover {
+      transform: translateY(-5px);
+    }
+
+    .shortcut-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 20px;
+      background: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    /* MAKING ICONS WHITE */
+    .shortcut-icon img {
+      width: 26px;
+      height: 26px;
+      filter: brightness(0) invert(1); /* Forces SVG icons to pure white */
+      transition: all 0.3s ease;
+    }
+
+    .shortcut-icon i {
+      color: #ffffff; /* Forces FontAwesome icons to pure white */
+      font-size: 22px;
+    }
+
+    .shortcut-label {
+      font-size: 0.85rem;
+      color: var(--text-soft);
+      font-weight: 500;
+    }
+
+    .shortcut:hover .shortcut-label {
+      color: var(--text);
+    }
+
+    .loader {
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 13, 18, 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .loader.show { display: flex; }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    /* Forces SVG images to be pure white */
+.shortcut-icon img {
+  width: 26px;
+  height: 26px;
+  filter: brightness(0) invert(1); 
+  transition: all 0.3s ease;
+}
+
+/* Forces Font Awesome icons to be pure white */
+.shortcut-icon i {
+  color: #ffffff;
+  font-size: 24px; /* Sized to match the visual weight of the images */
+}
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+
+<body>
+  <canvas id="particles"></canvas>
+  <div class="loader" id="loader"><div class="spinner"></div></div>
+
+  <div class="modal-overlay" id="welcomeModal">
+    <div class="modal-content">
+      <h2 class="modal-title">Welcome to Flint</h2>
+      <p style="color: var(--text-soft)">Join our community to stay updated and share your feedback.</p>
+      <a href="https://discord.gg/yourlink" target="_blank" class="discord-btn">
+        <i class="fa-brands fa-discord"></i> Join the Discord
+      </a>
+      <span class="close-modal" id="closeModal">Continue to Dashboard</span>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <div class="title-section">
+      <h1 class="title">Flint</h1>
+      <div class="subtitle">Quality and love ❤️</div>
+    </div>
+    
+    <div class="search-card">
+      <form class="search-box" id="searchForm" autocomplete="off">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="Search the web..." autocomplete="off">
+        <select id="engine">
+          <option value="https://search.brave.com/search?q=">Brave</option>
+          <option value="https://duckduckgo.com/?q=">DuckDuckGo</option>
+          <option value="https://www.google.com/search?q=">Google</option>
+        </select>
+      </form>
+    </div>
+
+<div class="shortcuts" id="shortcuts">
+  <a class="shortcut" data-url="/pages/g.html" tabindex="0">
+    <div class="shortcut-icon">
+      <i class="fa-solid fa-gamepad"></i>
+    </div>
+    <span class="shortcut-label">Games</span>
+  </a>
+
+  <a class="shortcut" data-url="https://youtube.com" tabindex="0">
+    <div class="shortcut-icon">
+      <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg">
+    </div>
+    <span class="shortcut-label">YouTube</span>
+  </a>
+
+  <a class="shortcut" data-url="https://github.com" tabindex="0">
+    <div class="shortcut-icon">
+      <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg">
+    </div>
+    <span class="shortcut-label">GitHub</span>
+  </a>
+
+  <a class="shortcut" data-url="https://discord.com" tabindex="0">
+    <div class="shortcut-icon">
+      <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg">
+    </div>
+    <span class="shortcut-label">Discord</span>
+  </a>
+
+  <div class="shortcut" id="addShortcut" tabindex="0">
+    <div class="shortcut-icon"><i class="fa-solid fa-plus"></i></div>
+    <span class="shortcut-label">Add</span>
+  </div>
+</div>
+    </div>
+  </div>
+
+  <script>
+    const $ = s => document.querySelector(s);
+    
+    // Show Modal on Load
+    window.onload = () => {
+      $('#welcomeModal').classList.add('active');
+    };
+
+    $('#closeModal').onclick = () => {
+      $('#welcomeModal').classList.remove('active');
+    };
+
+    const nav = url => {
+      $('#loader').classList.add('show');
+      setTimeout(() => { window.location.href = url; }, 500);
+    };
+
+    $('#searchForm').onsubmit = e => {
+      e.preventDefault();
+      const q = $('#searchInput').value.trim();
+      if (q) nav($('#engine').value + encodeURIComponent(q));
+    };
+
+    $('#shortcuts').onclick = e => {
+      const shortcut = e.target.closest('.shortcut[data-url]');
+      const addBtn = e.target.closest('#addShortcut');
+      if (shortcut) {
+        nav(shortcut.dataset.url);
+      } else if (addBtn) {
+        const name = prompt("Shortcut name:");
+        let url = prompt("URL:");
+        if (name && url) {
+          if (!/^(http|https):\/\//.test(url)) url = 'https://' + url;
+          const shortcuts = JSON.parse(localStorage.getItem('shortcuts') || '[]');
+          shortcuts.push({ name, url });
+          localStorage.setItem('shortcuts', JSON.stringify(shortcuts));
+          renderCustom();
+        }
+      }
+    };
+
+    function renderCustom() {
+      document.querySelectorAll('.custom-shortcut').forEach(e => e.remove());
+      const shortcuts = JSON.parse(localStorage.getItem('shortcuts') || '[]');
+      shortcuts.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'shortcut custom-shortcut';
+        div.dataset.url = s.url;
+        div.innerHTML = `<div class="shortcut-icon"><i class="fa-solid fa-link"></i></div><span class="shortcut-label">${s.name}</span>`;
+        $('#addShortcut').before(div);
+      });
+    }
+
+    renderCustom();
+  </script>
+
+  <script>
+    // Simple Particle System
+    const canvas = document.getElementById("particles");
+    const ctx = canvas.getContext("2d");
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resize();
+    window.onresize = resize;
+
+    let particles = [];
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 1;
+        this.vx = (Math.random() - 0.5) * 0.4;
+        this.vy = (Math.random() - 0.5) * 0.4;
+        this.alpha = 0.1 + Math.random() * 0.2;
+      }
+      update() {
+        this.x += this.vx; this.y += this.vy;
+        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+      }
+      draw() {
+        ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
+        ctx.fill();
+      }
+    }
+    for (let i = 0; i < 50; i++) particles.push(new Particle());
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => { p.update(); p.draw(); });
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
+</body>
+</html>
