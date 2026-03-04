@@ -50,8 +50,8 @@
         <div class="message-content">
             <div class="spinner"></div>
             <h1 id="loading-title">Connecting</h1>
-            <p id="loading-url">Initializing proxy...</p>
-            <button id="skip-btn">Skip</button>
+            <p id="loading-url">Starting site...</p>
+            <button id="skip-btn">Skip (Not Recommended)</button>
         </div>
     </div>
     <div id="error" class="message-container" style="display:none">
@@ -67,7 +67,7 @@
         const DEFAULT_WISP = window.SITE_CONFIG?.defaultWisp || "wss://glseries.net/wisp/";
         const WISP_SERVERS = window.SITE_CONFIG?.wispServers || [];
 
-        const ERRORS={noUrl:{title:"No URL Provided",message:"You need to provide a URL to load.",hint:`Format: ${location.pathname}#https://example.com`},invalidUrl:{title:"Invalid URL",message:"The URL you provided is not valid.",hint:`Try: ${location.pathname}#https://google.com`},connectionFailed:{title:"Connection Failed",message:"Could not connect to the website.",hint:"The site may be down or blocking requests."},proxyError:{title:"Proxy Error",message:"Failed to initialize the proxy connection.",hint:"Try refreshing or check your proxy settings."},timeout:{title:"Loading Timeout",message:"The page is taking too long to load.",hint:"Click 'Skip' to view what has loaded, or 'Retry' to try again."},blocked:{title:"Access Denied",message:"This website is blocking access.",hint:"Some sites don't allow being loaded through proxies."},unknown:{title:"Error",message:"An unexpected error occurred.",hint:"Please try again."}};
+        const ERRORS={noUrl:{title:"No URL Provided",message:"You need to provide a URL to load.",hint:`Format: ${location.pathname}#https://example.com`},invalidUrl:{title:"Invalid URL",message:"The URL you provided is not valid.",hint:`Try: ${location.pathname}#https://google.com`},connectionFailed:{title:"Connection Failed",message:"Could not connect to the website.",hint:"The site may be down or blocking requests."},proxyError:{title:"Embed Error",message:"Failed to initialize the wisp connection.",hint:"Try refreshing or check your Flint settings."},timeout:{title:"Loading Timeout",message:"The page is taking too long to load.",hint:"Click 'Skip' to view what has loaded, or 'Retry' to try again."},blocked:{title:"Access Denied",message:"This website is blocking access.",hint:"Some sites don't allow being loaded through this."},unknown:{title:"Error",message:"An unexpected error occurred.",hint:"Please try again."}};
         const els={loading:document.getElementById('loading'),loadingTitle:document.getElementById('loading-title'),loadingUrl:document.getElementById('loading-url'),error:document.getElementById('error'),errorMessage:document.getElementById('error-message'),iframeContainer:document.getElementById('iframe-container'),skipBtn:document.getElementById('skip-btn'),retryBtn:document.getElementById('retry-btn')};
         const isValidUrl=(url)=>{try{const u=new URL(url);return u.protocol==='http:'||u.protocol==='https:'}catch{return false}};
         const showContent=()=>{els.loading.style.opacity='0';els.loading.style.visibility='hidden';els.iframeContainer.classList.add('loaded')};
