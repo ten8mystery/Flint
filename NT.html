@@ -355,36 +355,42 @@ border-top-color: #ffffff      border-radius: 50%;
       $('#welcomeModal').classList.remove('active');
     };
 
-    // UPDATED NAVIGATION LOGIC
+// UPDATED NAVIGATION LOGIC
     const nav = url => {
       $('#loader').classList.add('show');
+      // This sends the URL exactly as it is (e.g., "/pages/g.html")
       window.parent?.postMessage({ type: 'navigate', url }, '*');
-    };
-
-    $('#searchForm').onsubmit = e => {
-      e.preventDefault();
-      const q = $('#searchInput').value.trim();
-      if (q) nav($('#engine').value + encodeURIComponent(q));
+      
+      // If you are testing this NOT in an iframe, 
+      // you might want a fallback like: window.location.href = url;
     };
 
     $('#shortcuts').onclick = e => {
-      const shortcut = e.target.closest('.shortcut[data-url]');
-      const addBtn = e.target.closest('#addShortcut');
+      const shortcut = e.target.closest('.shortcut');
+      if (!shortcut) return;
+
+      const addBtn = shortcut.id === 'addShortcut';
       
-      if (shortcut) {
-        e.preventDefault(); // Added to prevent default anchor behavior
-        nav(shortcut.dataset.url);
-      } else if (addBtn) {
+      if (addBtn) {
         const name = prompt("Shortcut name:");
-        if (!name) return; // Prevent empty names
+        if (!name) return;
         let url = prompt("URL:");
-        if (!url) return; // Prevent empty urls
-        if (!/^(http|https):\/\//.test(url)) url = 'https://' + url;
+        if (!url) return;
+        
+        // Only add https if it's a standard web address without a protocol or local path
+        if (!/^(http|https|\/)/.test(url)) url = 'https://' + url;
         
         const shortcuts = JSON.parse(localStorage.getItem('shortcuts') || '[]');
         shortcuts.push({ name, url });
         localStorage.setItem('shortcuts', JSON.stringify(shortcuts));
         renderCustom();
+      } else {
+        // This handles both hardcoded and custom shortcuts
+        const url = shortcut.dataset.url;
+        if (url) {
+          e.preventDefault();
+          nav(url);
+        }
       }
     };
 
