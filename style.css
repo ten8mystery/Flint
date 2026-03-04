@@ -509,7 +509,7 @@ input.bar::placeholder {
 
 .wisp-option.active {
     border-color: var(--accent);
-    background: var(--accent-glow);
+    background: var(--accent-dim);
 }
 
 .wisp-option-header {
