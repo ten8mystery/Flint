@@ -1,167 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Embed</title>
-    <script src="../scripts/background.js"></script>
-    <script src="../config.js"></script>
-    <script src="../scripts/settings.js"></script>
-    <link rel="stylesheet" href="../styles/main.css">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="../styles/background.css">
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Inter',system-ui,sans-serif}
-        #iframe-container{width:100%;height:100%;position:absolute;top:0;left:0;transition:filter .5s ease;z-index:1;filter:blur(15px)}
-        #iframe-container.loaded{filter:blur(0)}
-        #embed-frame{width:100%;height:100%;border:none;background:transparent}
-        .message-container{display:flex;align-items:center;justify-content:center;height:100%;width:100%;color:var(--text);text-align:center;position:fixed;top:0;left:0;z-index:10;background:rgba(10,10,10,.4);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:opacity .3s ease,visibility .3s}
-        .message-content{max-width:400px;padding:20px}
-        .message-content h1{font-size:1.25rem;font-weight:600;color:var(--text);margin-bottom:8px}
-        .message-content p{color:var(--text-muted);font-size:13px;word-break:break-all}
-        .spinner{border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;width:32px;height:32px;animation:spin .8s linear infinite;margin:0 auto 20px}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        #skip-btn,#retry-btn{margin-top:20px;padding:8px 16px;background:transparent;color:var(--text-muted);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:13px;transition:all .15s}
-        #skip-btn:hover,#retry-btn:hover{border-color:var(--border-light);color:var(--text)}
-    </style>
-    <script src="https://cdn.jsdelivr.net/gh/Destroyed12121/Staticsj@main/JS/scramjet.all.js" defer></script>
-    <script type="module">
-        import * as BareMux from "https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux/dist/index.mjs";
-        window.BareMux = BareMux;
-        const loadScripts = async () => {
-            await new Promise(resolve => {
-                const script = document.createElement('script');
-                script.src = "./script.js";
-                script.onload = resolve;
-                document.head.appendChild(script);
-            });
-        };
-        window.scriptsLoaded = loadScripts();
-    </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flint Browser</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<script src="https://cdn.jsdelivr.net/gh/Destroyed12121/Staticsj@main/JS/scramjet.all.js" defer></script>
+
+<script type="module">
+import * as BareMux from "https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux/dist/index.mjs";
+window.BareMux = BareMux;
+</script>
+
+<link rel="stylesheet" href="style.css">
+<script src="./script.js" defer></script>
+
+<style>
+
+html, body {
+margin:0;
+padding:0;
+width:100%;
+height:100%;
+background:#0d0d12;
+overflow:hidden;
+}
+
+#app{
+width:100vw;
+height:100vh;
+}
+
+</style>
 </head>
+
 <body>
-    <div id="loading" class="message-container">
-        <div class="message-content">
-            <div class="spinner"></div>
-            <h1 id="loading-title">Connecting</h1>
-            <p id="loading-url">Initializing loader...</p>
-            <button id="skip-btn" style="display:none">Skip</button>
-        </div>
-    </div>
-    <div id="error" class="message-container" style="display:none">
-        <div class="message-content">
-            <h1>Connection Error</h1>
-            <p id="error-message">An error occurred.</p>
-            <button id="retry-btn">Retry</button>
-        </div>
-    </div>
-    <div id="iframe-container"></div>
-    <script>
-        const DEFAULT_WISP = "wss://glseries.net/wisp/";
-        const WISP_SERVERS = [
-            "wss://i-ready.math.bostoncareercounselor.com/wisp/",
-            "wss://glseries.net/wisp/",
-            "wss://wisp.rhw.one/wisp/"
-        ];
-        
-        const ERRORS={noUrl:{title:"No URL Provided",message:"You need to provide a URL to load.",hint:`Format: ${location.pathname}#https://example.com`},invalidUrl:{title:"Invalid URL",message:"The URL you provided is not valid.",hint:`Try: ${location.pathname}#https://google.com`},connectionFailed:{title:"Connection Failed",message:"Could not connect to the website.",hint:"The site may be down or blocking requests."},proxyError:{title:"Loader Error",message:"Failed to initialize any proxy connection.",hint:"All available Wisp servers are currently unreachable."},timeout:{title:"Loading Timeout",message:"The page is taking too long to load.",hint:"Click 'Skip' to view what has loaded, or 'Retry' to try again."},blocked:{title:"Access Denied",message:"This website is blocking access.",hint:"Some sites don't allow being loaded through Loaders."},unknown:{title:"Error",message:"An unexpected error occurred.",hint:"Please try again."}};
-        const els={loading:document.getElementById('loading'),loadingTitle:document.getElementById('loading-title'),loadingUrl:document.getElementById('loading-url'),error:document.getElementById('error'),errorMessage:document.getElementById('error-message'),iframeContainer:document.getElementById('iframe-container'),skipBtn:document.getElementById('skip-btn'),retryBtn:document.getElementById('retry-btn')};
-        
-        const isValidUrl=(url)=>{try{const u=new URL(url);return u.protocol==='http:'||u.protocol==='https:'}catch{return false}};
-        const showContent=()=>{els.loading.style.opacity='0';els.loading.style.visibility='hidden';els.iframeContainer.classList.add('loaded')};
-        function showError(type,details=''){els.loading.style.display='none';els.error.style.display='flex';const err=ERRORS[type]||ERRORS.unknown;els.errorMessage.innerHTML=`<strong>${err.title}</strong><br><br>${err.message}<br><br><small style="color:var(--text-muted)">${err.hint}</small>${details?`<br><br><code style="font-size:11px;background:var(--surface);padding:4px 8px;border-radius:4px">${details}</code>`:''}`}
-        function getErrorType(msg){msg=(msg||'').toLowerCase();if(msg.includes('fetch')||msg.includes('network'))return'connectionFailed';if(msg.includes('timeout'))return'timeout';if(msg.includes('blocked')||msg.includes('cors')||msg.includes('access'))return'blocked';if(msg.includes('websocket')||msg.includes('wisp')||msg.includes('transport'))return'proxyError';return'unknown'}
 
-        let scramjetInstance = null;
-        let connectionInstance = null;
+<!-- Proxy App Container -->
+<div id="app"></div>
 
-        async function initializeScramjet() {
-            if (scramjetInstance) return scramjetInstance;
-            const basePath = location.pathname.replace(/[^/]*$/, '') + '/';
-            const { ScramjetController } = $scramjetLoadController();
-            scramjetInstance = new ScramjetController({
-                prefix: basePath + "scramjet",
-                files: {
-                    wasm: "https://cdn.jsdelivr.net/gh/Destroyed12121/Staticsj@main/JS/scramjet.wasm.wasm",
-                    all: "https://cdn.jsdelivr.net/gh/Destroyed12121/Staticsj@main/JS/scramjet.all.js",
-                    sync: "https://cdn.jsdelivr.net/gh/Destroyed12121/Staticsj@main/JS/scramjet.sync.js"
-                }
-            });
-            await scramjetInstance.init();
-            return scramjetInstance;
-        }
+<!-- Settings Modal (optional but kept) -->
+<div class="wisp-settings-modal hidden" id="wisp-settings-modal">
 
-        async function initializeConnection() {
-            if (connectionInstance) return connectionInstance;
-            const basePath = location.pathname.replace(/[^/]*$/, '') + '/';
-            
-            const customWisps = JSON.parse(localStorage.getItem('customWisps') || '[]');
-            const priorityWisp = localStorage.getItem("proxServer");
-            const wispList = [...new Set([priorityWisp, ...WISP_SERVERS, ...customWisps, DEFAULT_WISP])].filter(Boolean);
+<div class="settings-card">
 
-            connectionInstance = new BareMux.BareMuxConnection(basePath + "bareworker.js");
+<div class="settings-header">
+<h2><i class="fa-solid fa-server"></i> Flint Settings</h2>
+<button class="close-btn" id="close-wisp-modal">
+<i class="fa-solid fa-xmark"></i>
+</button>
+</div>
 
-            for (const url of wispList) {
-                try {
-                    els.loadingUrl.textContent = `Connecting to ${new URL(url).hostname}...`;
-                    await connectionInstance.setTransport("https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.28/dist/index.mjs", [{ wisp: url }]);
-                    console.log(`Connected to Wisp: ${url}`);
-                    return connectionInstance;
-                } catch (e) {
-                    console.warn(`Failed to connect to ${url}, trying next...`);
-                }
-            }
-            throw new Error('All Wisp servers failed');
-        }
+<div class="settings-content">
 
-        async function registerServiceWorker() {
-            if ('serviceWorker' in navigator) {
-                const basePath = location.pathname.replace(/[^/]*$/, '') + '/';
-                const registration = await navigator.serviceWorker.register(basePath + 'sw.js', { scope: basePath });
-                await navigator.serviceWorker.ready;
-                const wispUrl = localStorage.getItem("proxServer") || DEFAULT_WISP;
-                const allServers = [...WISP_SERVERS, ...JSON.parse(localStorage.getItem('customWisps') || '[]')];
-                const swConfig = { type: "config", wispurl: wispUrl, servers: allServers, autoswitch: true };
-                if (registration.active) registration.active.postMessage(swConfig);
-            }
-        }
+<div class="section-title">
+<i class="fa-solid fa-cloud"></i> Select Server
+</div>
 
-        async function initialize() {
-            const targetUrl = window.location.hash.substring(1);
-            const skipLoading = new URLSearchParams(window.location.search).get('skip') !== null;
-            if (!targetUrl) return showError('noUrl');
-            if (!isValidUrl(targetUrl)) return showError('invalidUrl', targetUrl);
-            
-            try {
-                await registerServiceWorker();
-                const scramjet = await initializeScramjet();
-                await initializeConnection();
-                
-                els.loadingTitle.textContent = 'Loading Site';
-                els.loadingUrl.textContent = targetUrl;
-                
-                const activeFrame = scramjet.createFrame();
-                activeFrame.frame.id = 'embed-frame';
-                els.iframeContainer.appendChild(activeFrame.frame);
-                activeFrame.frame.addEventListener('load', showContent);
-                
-                setTimeout(() => {
-                    els.skipBtn.style.display = 'inline-block';
-                    els.skipBtn.onclick = showContent;
-                }, 3000);
-                
-                activeFrame.go(targetUrl);
-            } catch (err) {
-                showError(getErrorType(err.message), targetUrl);
-            }
-        }
+<div class="server-list" id="server-list"></div>
 
-        els.retryBtn.onclick = () => location.reload();
-        window.addEventListener('load', async () => {
-            if (window.scriptsLoaded) await window.scriptsLoaded;
-            initialize();
-        });
-    </script>
+<div class="section-title">
+<i class="fa-solid fa-plus-circle"></i> Custom Server
+</div>
+
+<div class="custom-input-group">
+<input type="text" id="custom-wisp-input" placeholder="wss://your-wisp-server.com/wisp/">
+<button id="save-custom-wisp">
+<i class="fa-solid fa-plus"></i>
+</button>
+</div>
+
+</div>
+
+<div class="settings-footer">
+Lower ping = faster browsing
+</div>
+
+</div>
+</div>
+
 </body>
 </html>
