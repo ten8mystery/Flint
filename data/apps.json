@@ -34,5 +34,23 @@
     "src": "../embed.html#https://www.soundcloud.com",
     "image": "https://i1.sndcdn.com/avatars-wQ2we7uDPoXzUVzW-qdr1Yg-t240x240.jpg",
     "description": "iframe"
+  },
+  {
+    "name": "Youtube",
+    "src": "../embed.html#https://www.youtube.com",
+    "image": "https://cdn.mos.cms.futurecdn.net/R4DgSdP6erUexko5KuX6UF-1920-80.jpg",
+    "description": "iframe"
+  },
+  {
+    "name": "Discord",
+    "src": "../embed.html#https://www.discord.com",
+    "image": "https://static.vecteezy.com/system/resources/previews/006/892/625/non_2x/discord-logo-icon-editorial-free-vector.jpg",
+    "description": "iframe"
+  },
+  {
+    "name": "Scratch",
+    "src": "../embed.html#https://www.scratch.mit.edu",
+    "image": "https://www.aisd.net/wp-content/files/Scratch-Logo.png",
+    "description": "iframe"
   }
 ]
