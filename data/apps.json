@@ -13,7 +13,7 @@
   },
   {
     "name": "Spotify",
-    "src": "../embed.html#https://www.open.spotify.com",
+    "src": "../embed.html#https://www.spotify.com",
     "image": "https://s3-alpha.figma.com/hub/file/2734964093/9f5edc36-eb4d-414a-8447-10514f2bc224-cover.png",
     "description": "iframe"
   },
@@ -24,9 +24,15 @@
     "description": "iframe"
   },
   {
-    "name": "Youtube",
-    "src": "..embed.html#https://www.youtube.com",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png",
+    "name": "TikTok",
+    "src": "../embed.html#https://www.tiktok.com",
+    "image": "https://static.wikia.nocookie.net/tiktok/images/e/eb/TikTok_Logo.png",
+    "description": "iframe"
+  },
+  {
+    "name": "Soundcloud",
+    "src": "../embed.html#https://www.soundcloud.com",
+    "image": "https://i1.sndcdn.com/avatars-wQ2we7uDPoXzUVzW-qdr1Yg-t240x240.jpg",
     "description": "iframe"
   }
 ]
