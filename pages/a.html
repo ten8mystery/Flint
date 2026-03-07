@@ -28,7 +28,6 @@
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
-    /* FIX: Persistent background using a fixed pseudo-element */
     body::before {
       content: "";
       position: fixed;
@@ -47,7 +46,7 @@
       color: var(--text);
       overflow-x: hidden;
       overflow-y: auto;
-      background-color: var(--bg-gradient-end); /* Fallback color */
+      background-color: var(--bg-gradient-end);
     }
 
     #particles {
@@ -57,7 +56,6 @@
       pointer-events: none;
     }
 
-    /* Loader Styles */
     .loader {
       position: fixed;
       inset: 0;
@@ -81,7 +79,6 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Main Container */
     .main-container {
       display: flex;
       flex-direction: column;
@@ -146,7 +143,6 @@
       padding: 6px 0;
     }
 
-    /* Games Grid */
     .shortcuts {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -200,7 +196,6 @@
       text-overflow: ellipsis;
     }
 
-    /* Iframe Overlay */
     .iframe-overlay {
       display: none;
       position: fixed;
@@ -302,19 +297,15 @@ const closeBtn = $('#closeBtn');
 const fullscreenBtn = $('#fullscreenBtn');
 const iframeContainer = $('#iframeContainer');
 
-
 let allGames = [];
 let renderedStart = 0;
-
 const BATCH_SIZE = 24;
-
 let currentIframe = null;
 
 function createFreshIframe() {
   iframeContainer.innerHTML = '';
   const iframe = document.createElement('iframe');
-  iframe.allow =
-    'autoplay; fullscreen; gamepad; accelerometer; gyroscope; pointer-lock; microphone';
+  iframe.allow = 'autoplay; fullscreen; gamepad; accelerometer; gyroscope; pointer-lock; microphone';
   iframeContainer.appendChild(iframe);
   currentIframe = iframe;
   return iframe;
@@ -324,42 +315,75 @@ const priorityGames = ["[!] REQUEST GAME", "", ""];
 
 fetch('https://raw.githubusercontent.com/ten8mystery/Flint/main/data/apps.json')
   .then(res => res.json())
-.then(data => {
+  .then(data => {
+    data.sort((a, b) => {
+      const ai = priorityGames.indexOf(a.name);
+      const bi = priorityGames.indexOf(b.name);
+      if (ai !== -1 && bi !== -1) return ai - bi;
+      if (ai !== -1) return -1;
+      if (bi !== -1) return 1;
+      return a.name.localeCompare(b.name);
+    });
+    
+    // ✅ STORE GAMES
+    allGames = data;
 
-  data.sort((a, b) => {
-    const ai = priorityGames.indexOf(a.name);
-    const bi = priorityGames.indexOf(b.name);
-    if (ai !== -1 && bi !== -1) return ai - bi;
-    if (ai !== -1) return -1;
-    if (bi !== -1) return 1;
-    return a.name.localeCompare(b.name);
+    // ✅ FIRST RENDER
+    renderBatch(true);
   });
-  
-
-
-  // ✅ STORE GAMES
-  allGames = data;
-
-  // ✅ FIRST RENDER
-  renderBatch(true);
-});
 
 window.addEventListener('scroll', () => {
-
-  const nearBottom =
-    window.innerHeight + window.scrollY
-    >= document.body.offsetHeight - 500;
-
-  if (nearBottom) {
+  const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 500;
+  
+  // Only load more batches if the search bar is empty
+  if (nearBottom && searchInput.value.trim() === '') {
     renderBatch();
   }
-
 });
 
+// ✅ HELPER: Create and append a single game card
+function appendGame(game) {
+  const a = document.createElement('a');
+  a.className = 'shortcut';
+  a.dataset.name = game.name;
 
+  a.innerHTML = `
+    <div class="shortcut-icon">
+      <img loading="lazy"
+      src="${game.image}"
+      onerror="this.src='https://via.placeholder.com/100?text=?'">
+    </div>
+    <span class="shortcut-label">${game.name}</span>
+  `;
+
+  a.addEventListener('click', e => {
+    e.preventDefault();
+
+    $('#loader').classList.add('show');
+    overlay.style.display = 'flex';
+
+    const iframe = createFreshIframe();
+
+    if (game.description === "iframe") {
+      iframe.src = game.src;
+      iframe.onload = () => $('#loader').classList.remove('show');
+    } else {
+      fetch(game.src)
+        .then(r => r.text())
+        .then(html => {
+          const doc = iframe.contentDocument || iframe.contentWindow.document;
+          doc.open();
+          doc.write(html);
+          doc.close();
+          $('#loader').classList.remove('show');
+        });
+    }
+  });
+
+  gameList.appendChild(a);
+}
 
 function renderBatch(reset = false) {
-
   if (reset) {
     gameList.innerHTML = '';
     renderedStart = 0;
@@ -368,80 +392,35 @@ function renderBatch(reset = false) {
   const end = renderedStart + BATCH_SIZE;
   const slice = allGames.slice(renderedStart, end);
 
-  slice.forEach(game => {
-
-    const a = document.createElement('a');
-    a.className = 'shortcut';
-    a.dataset.name = game.name;
-
-    a.innerHTML = `
-      <div class="shortcut-icon">
-        <img loading="lazy"
-        src="${game.image}"
-        onerror="this.src='https://via.placeholder.com/100?text=?'">
-      </div>
-      <span class="shortcut-label">${game.name}</span>
-    `;
-
-    a.addEventListener('click', e => {
-      e.preventDefault();
-
-      $('#loader').classList.add('show');
-      overlay.style.display = 'flex';
-
-      const iframe = createFreshIframe();
-
-      if (game.description === "iframe") {
-
-        iframe.src = game.src;
-
-        iframe.onload = () =>
-          $('#loader').classList.remove('show');
-
-      } else {
-
-        fetch(game.src)
-          .then(r => r.text())
-          .then(html => {
-            const doc =
-              iframe.contentDocument ||
-              iframe.contentWindow.document;
-
-            doc.open();
-            doc.write(html);
-            doc.close();
-
-            $('#loader').classList.remove('show');
-          });
-      }
-    });
-
-    gameList.appendChild(a);
-  });
-
+  slice.forEach(appendGame);
   renderedStart += BATCH_SIZE;
 }
 
-
-// SEARCH
 searchInput.addEventListener('input', () => {
-  const q = searchInput.value.toLowerCase();
-  document.querySelectorAll('.shortcut').forEach(g => {
-    g.style.display =
-      g.dataset.name.toLowerCase().includes(q) ? 'flex' : 'none';
-  });
+  const q = searchInput.value.toLowerCase().trim();
+
+  // If search is cleared, reset to standard batch rendering
+  if (q === '') {
+    renderBatch(true);
+    return;
+  }
+
+  const filteredGames = allGames.filter(game => 
+    game.name.toLowerCase().includes(q)
+  );
+
+  gameList.innerHTML = '';
+  filteredGames.forEach(appendGame);
 });
 
-// CLOSE
 closeBtn.onclick = () => {
   overlay.style.display = 'none';
   if (currentIframe) currentIframe.src = 'about:blank';
   iframeContainer.innerHTML = '';
   currentIframe = null;
-  resize();
+  resize(); // Assuming this is for your canvas particles
 };
 
-// FULLSCREEN
 fullscreenBtn.onclick = () => {
   if (!currentIframe) return;
   currentIframe.requestFullscreen?.();
