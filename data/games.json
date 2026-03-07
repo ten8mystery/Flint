@@ -1661,14 +1661,12 @@
     "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/251.png",
     "description": "Game Active"
   },
-
  {
     "name": "Wheely 8",
     "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/252.html",
     "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/252.png",
     "description": "Game Active"
   },
-
  {
     "name": "World Box",
     "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/174.html",
@@ -1722,5 +1720,5 @@
     "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/595.html",
     "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/595.png",
     "description": "Game Active"
-  },
+  }
 ]
