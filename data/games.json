@@ -1438,5 +1438,11 @@
     "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/625.html",
     "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/625.png",
     "description": "Game Active"
+  },
+  {
+    "name": "Basket Battle",
+    "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/25.html",
+    "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/25.png",
+    "description": "Game Active"
   }
 ]
