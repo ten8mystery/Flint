@@ -1450,5 +1450,11 @@
     "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/312.html",
     "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/312.png",
     "description": "Game Active"
+  },
+  {
+    "name": "Blocky Snakes",
+    "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/168.html",
+    "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/168.png",
+    "description": "Game Active"
   }
 ]
