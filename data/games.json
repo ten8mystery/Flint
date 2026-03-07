@@ -1456,5 +1456,11 @@
     "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/168.html",
     "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/168.png",
     "description": "Game Active"
+  },
+  {
+    "name": "Bowmasters",
+    "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/0.html",
+    "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/0.png",
+    "description": "Game Active"
   }
 ]
