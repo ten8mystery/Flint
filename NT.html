@@ -8,17 +8,28 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-gradient-start: #1a1a20;
-      --bg-gradient-end: #0d0d12;
-      --panel-bg: rgba(30, 30, 36, 0.6);
-      --panel-hover: rgba(45, 45, 55, 0.8);
-      --text: #fdfdfd;
+      /* Main Background Gradient (slightly colder) */
+      --bg-gradient-start: #141417;
+      --bg-gradient-end: #09090b;
+      
+      /* Panels and Elements (darker grey) */
+      --panel-bg: rgba(24, 24, 27, 0.6);
+      --panel-hover: rgba(39, 39, 42, 0.8);
+      
+      /* Typography */
+      --text: #fafafa;
       --text-soft: #a1a1aa;
-      --accent: #e2c044;
+      
+      /* --- THEMATIC COLOR CHANGE --- */
+      /* Old Gold: #e2c044 -> New Colder Grey: #d1d5db (grey-300) */
+      --accent: #d1d5db; 
+      
+      /* Specific UI colors */
       --discord: #5865F2;
-      --border-light: rgba(255, 255, 255, 0.06);
-      --border-hover: rgba(255, 255, 255, 0.15);
-      --shadow-soft: 0 16px 40px rgba(0, 0, 0, 0.4);
+      --border-light: rgba(255, 255, 255, 0.04);
+      --border-hover: rgba(255, 255, 255, 0.12);
+      --shadow-soft: 0 16px 40px rgba(0, 0, 0, 0.5);
+      --danger: #ef4444;
     }
 
     * {
@@ -28,24 +39,27 @@
       font-family: 'Inter', sans-serif;
     }
 
-body {
+    body {
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      /* Remove justify-content: center; */
       background: radial-gradient(circle at top, var(--bg-gradient-start), var(--bg-gradient-end) 80%) no-repeat fixed;
       color: var(--text);
-      overflow-x: hidden; /* Changed from hidden to allow vertical scroll if needed */
+      overflow-x: hidden;
     }
 
     .main-container {
       flex: 1;
       display: flex;
-      flex-direction: center;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      /* Rest of your styles... */
+      width: 100%;
+      max-width: 700px;
+      padding: 20px;
+      z-index: 10;
+      transform: translateY(-5vh);
     }
 
     #particles {
@@ -55,6 +69,7 @@ body {
       pointer-events: none;
     }
 
+    /* --- MODAL (POPUP) --- */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -116,27 +131,87 @@ body {
       filter: brightness(1.1);
     }
 
+    /* --- BEAUTIFIED MODAL CHECKBOX --- */
+    .modal-opt-out {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 25px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* Visually hide the native checkbox */
+    .modal-opt-out input {
+      display: none;
+    }
+
+    /* Style the custom checkbox box */
+    .custom-checkbox {
+      width: 20px;
+      height: 20px;
+      border: 1px solid var(--border-light);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.02);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    /* Style the check icon (initially hidden) */
+    .custom-checkbox i {
+      color: #111; /* Dark icon for contrast against grey */
+      font-size: 11px;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* Interaction State: Checkbox Hover */
+    .modal-opt-out:hover .custom-checkbox {
+      border-color: var(--border-hover);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Checked State: Box fills with Accent color (The Grey) */
+    .modal-opt-out input:checked + .custom-checkbox {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* Checked State: Icon appears */
+    .modal-opt-out input:checked + .custom-checkbox i {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .modal-opt-label {
+      font-size: 0.85rem;
+      color: var(--text-soft);
+      transition: color 0.3s ease;
+    }
+
+    .modal-opt-out:hover .modal-opt-label {
+      color: var(--text);
+    }
+
     .close-modal {
       display: block;
-      margin-top: 20px;
+      margin-top: 15px;
       color: var(--text-soft);
       cursor: pointer;
       font-size: 0.9rem;
       text-decoration: underline;
+      transition: color 0.2s;
     }
 
-    .main-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      max-width: 700px;
-      padding: 20px;
-      z-index: 10;
-      transform: translateY(-5vh);
+    .close-modal:hover {
+      color: var(--accent); /* Now highlights grey */
     }
 
+    /* --- MAIN UI --- */
     .title-section {
       display: flex;
       flex-direction: column;
@@ -185,7 +260,7 @@ body {
     }
 
     .search-box select {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.03);
       color: var(--text-soft);
       border: 1px solid var(--border-light);
       border-radius: 24px;
@@ -265,16 +340,16 @@ body {
       animation: spin 0.8s linear infinite;
     }
     
-
+    /* --- FOOTER --- */
     footer {
       width: 100%;
       margin-top: auto; 
-      padding: 15px 30px; /* Much thinner padding */
+      padding: 15px 30px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       border-top: 1px solid var(--border-light);
-      background: rgba(13, 13, 18, 0.2); /* More transparent */
+      background: rgba(13, 13, 18, 0.1); /* Lighter footer bg */
       backdrop-filter: blur(8px);
       z-index: 10;
     }
@@ -286,14 +361,30 @@ body {
     }
 
     .footer-link, .copyright {
-      color: rgba(161, 161, 170, 0.5); /* Faded color */
+      color: rgba(161, 161, 170, 0.3); /* Even more faded */
       text-decoration: none;
       font-size: 0.75rem;
-      transition: color 0.2s ease;
+      transition: color 0.2s ease, opacity 0.2s ease;
     }
 
     .footer-link:hover {
-      color: var(--accent);
+      color: var(--text);
+    }
+
+    /* --- BEAUTIFIED RESET SITE DATA BUTTON --- */
+    #resetDataBtn {
+      color: rgba(239, 68, 68, 0.3); /* Subtle danger */
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      user-select: none;
+    }
+
+    #resetDataBtn:hover {
+      color: #ef4444; /* Standard red on hover */
+      opacity: 1;
     }
 
     .status-indicator {
@@ -301,24 +392,22 @@ body {
       align-items: center;
       gap: 6px;
       font-size: 0.7rem;
-      color: rgba(161, 161, 170, 0.6);
+      color: rgba(161, 161, 170, 0.4);
     }
 
     .status-dot {
       width: 6px;
       height: 6px;
-      background: #4ade80;
+      background: #34d399; /* Green, but slightly less intense */
       border-radius: 50%;
     }
 
     .copyright {
       font-size: 0.8rem;
-      color: rgba(161, 161, 170, 0.5);
+      color: rgba(161, 161, 170, 0.3);
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
-    
-    
   </style>
 </head>
 
@@ -333,6 +422,15 @@ body {
       <a href="https://discord.gg/YbbNPD8YDm" target="_blank" class="discord-btn">
         <i class="fa-brands fa-discord"></i> Join the Discord
       </a>
+      
+      <label class="modal-opt-out" for="neverShowAgain">
+        <input type="checkbox" id="neverShowAgain">
+        <div class="custom-checkbox">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <span class="modal-opt-label">Don't show this again</span>
+      </label>
+
       <span class="close-modal" id="closeModal">Continue to Dashboard</span>
     </div>
   </div>
@@ -341,10 +439,7 @@ body {
     <div class="title-section">
       <h1 class="title">Flint</h1>
       <div class="subtitle">Welcome to Flint.</div>
-      
-      
     </div>
-
 
     <div class="search-card">
       <form class="search-box" id="searchForm">
@@ -358,8 +453,6 @@ body {
       </form>
     </div>
     
-    
-
     <div class="shortcuts" id="shortcuts">
       <a class="shortcut" href="/pages/g.html">
         <div class="shortcut-icon"><i class="fa-solid fa-gamepad"></i></div>
@@ -393,11 +486,15 @@ body {
     </div>
   </div>
   
-<footer>
+  <footer>
     <div class="footer-left">
-      <span class="copyright">&copy; 2026 Flint</span>
+      <span class="copyright">© 2026 Flint</span>
       <a href="#" class="footer-link">DMCA</a>
       <a href="https://github.com" class="footer-link"><i class="fa-brands fa-github"></i></a>
+      
+      <a href="#" class="footer-link" id="resetDataBtn">
+        <i class="fa-solid fa-trash-can" style="font-size: 0.7rem;"></i> Reset Site Data
+      </a>
     </div>
     
     <div class="footer-right">
@@ -408,22 +505,33 @@ body {
     </div>
   </footer>
   
-  
-
   <script>
     const $ = s => document.querySelector(s);
 
     // POPUP LOGIC
     window.onload = () => {
-      $('#welcomeModal').classList.add('active');
+      if (localStorage.getItem('hideWelcomeModal') !== 'true') {
+        $('#welcomeModal').classList.add('active');
+      }
     };
 
     $('#closeModal').onclick = () => {
+      if ($('#neverShowAgain').checked) {
+        localStorage.setItem('hideWelcomeModal', 'true');
+      }
       $('#welcomeModal').classList.remove('active');
     };
 
+    // RESET DATA LOGIC
+    $('#resetDataBtn').onclick = (e) => {
+      e.preventDefault();
+      if (confirm("Are you sure you want to reset all site data? This will clear your custom shortcuts and modal preferences.")) {
+        localStorage.clear();
+        location.reload();
+      }
+    };
+
     const nav = url => {
-    const $ = s => document.querySelector(s);
       $('#loader').classList.add('show');
       window.parent?.postMessage({ type: 'navigate', url }, '*');
     };
@@ -434,7 +542,6 @@ body {
       const q = $('#searchInput').value.trim();
       if (q) nav($('#engine').value + encodeURIComponent(q));
     };
-
 
     // SHORTCUTS
     $('#shortcuts').onclick = e => {
