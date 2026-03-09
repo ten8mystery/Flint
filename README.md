@@ -15,7 +15,12 @@ Currently, it is owned by Incog and also developed by Zinc/ten8mystery.
 I live in the US so me making this open for anyone isnt, but yall asses might be cooked if ur country be strict like that. Just watch out when hosting. The big yahu might send his isreali goons to shoot up your house or smth.
 <h2>Credits</h2>
 MercuryWorkshop - ScramJet
+<div>
 MercuryWorkshop - Ultraviolet (Coming soon)
+</div>
 gn-math - Like half of the games (seriously thank u)
+<div>
 Our team - Bro deadass we need yall fr
-
+</div>
+<h2>Legal statement (Ignore if you are not my assigned US spy with the goal to track me down)</h2>
+Flint is a neutral privacy tool. We don't host the content you see. In accordance with US Section 230, we aren't responsible for user activity. If you're in a country with strict "security" laws (you know who you are), use a self-hosted Wisp servers and stay safe. We don't log your data, but the person running the server you connect to might—so don't be a dummy.
