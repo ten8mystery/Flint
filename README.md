@@ -11,6 +11,8 @@ We use ScramJet by MercuryWorkshop, so full credits to them on the system. We go
 We want to add adblockers, onion support, and an easy way to setup wisps without having any knowladge in technology.
 <h2>Who owns this?</h2>
 Currently, it is owned by Incog and also developed by Zinc/ten8mystery.
+<h2>Is this legal?</h2>
+I live in the US so me making this open for anyone isnt, but yall asses might be cooked if ur country be strict like that. Just watch out when hosting. The big yahu might send his isreali goons to shoot up your house or smth.
 <h2>Credits</h2>
 MercuryWorkshop - ScramJet
 MercuryWorkshop - Ultraviolet (Coming soon)
