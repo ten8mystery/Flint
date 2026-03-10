@@ -1,8 +1,12 @@
-const DEFAULT_WISP = window.SITE_CONFIG?.defaultWisp ?? "wss://i-ready.math.bostoncareercounselor.com/wisp/";
+const localWispUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/wisp/";
+
+const DEFAULT_WISP = window.SITE_CONFIG?.defaultWisp ?? localWispUrl;
+
 const WISP_SERVERS = [
-    { name: "Wisp 1", url: "wss://i-ready.math.bostoncareercounselor.com/wisp/" },
-    { name: "Wisp 2", url: "wss://glseries.net/wisp/" },
-    { name: "Wisp 3", url: "wss://wisp.rhw.one/wisp/" }
+    { name: "Wisp 1 (Local Default)", url: localWispUrl },
+    { name: "Wisp 2 (i-Ready)", url: "wss://i-ready.math.bostoncareercounselor.com/wisp/" },
+    { name: "Wisp 3 (GLSeries)", url: "wss://glseries.net/wisp/" },
+    { name: "Wisp 4 (RHW)", url: "wss://wisp.rhw.one/wisp/" }
 ];
 
 // Initialize default proxy server if not set
