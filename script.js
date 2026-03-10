@@ -3,10 +3,10 @@ const localWispUrl = (window.location.protocol === "https:" ? "wss://" : "ws://"
 const DEFAULT_WISP = window.SITE_CONFIG?.defaultWisp ?? localWispUrl;
 
 const WISP_SERVERS = [
-    { name: "Wisp 1 (Local Default)", url: localWispUrl },
-    { name: "Wisp 2 (i-Ready)", url: "wss://i-ready.math.bostoncareercounselor.com/wisp/" },
-    { name: "Wisp 3 (GLSeries)", url: "wss://glseries.net/wisp/" },
-    { name: "Wisp 4 (RHW)", url: "wss://wisp.rhw.one/wisp/" }
+    { name: "Local (Recommended)", url: localWispUrl },
+    { name: "Alt 1", url: "wss://i-ready.math.bostoncareercounselor.com/wisp/" },
+    { name: "Alt 2", url: "wss://glseries.net/wisp/" },
+    { name: "Alt 3", url: "wss://wisp.rhw.one/wisp/" }
 ];
 
 // Initialize default proxy server if not set
@@ -285,7 +285,7 @@ function createTab(makeActive = true) {
     const tab = {
         id: nextTabId++,
         title: "New Tab",
-        url: "NT.html",
+        url: "/pages/nt.html",
         frame,
         loading: false,
         favicon: null,
@@ -293,7 +293,7 @@ function createTab(makeActive = true) {
         loadStartTime: null
     };
 
-    frame.frame.src = "NT.html";
+    frame.frame.src = "/pages/nt.html";
 
     frame.addEventListener("urlchange", (e) => {
         tab.url = e.url;
@@ -338,7 +338,7 @@ function createTab(makeActive = true) {
             if (title) tab.title = title;
         } catch { }
 
-        if (frame.frame.contentWindow.location.href.includes('NT.html')) {
+        if (frame.frame.contentWindow.location.href.includes('/pages/nt.html')) {
             tab.title = "New Tab";
             tab.url = "";
             tab.favicon = null;
@@ -442,7 +442,7 @@ function updateAddressBar() {
     const bar = document.getElementById("address-bar");
     const tab = getActiveTab();
     if (bar && tab) {
-        bar.value = (tab.url && !tab.url.includes("NT.html")) ? tab.url : "";
+        bar.value = (tab.url && !tab.url.includes("/pages/nt.html")) ? tab.url : "";
     }
 }
 
@@ -736,8 +736,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             root.innerHTML = `
                 <div style="display: flex; align-items: center; justify-content: center; height: 100vh; font-family: Arial, sans-serif; background: #0a0a0a; color: #e4e4e7;">
                     <div style="text-align: center; max-width: 600px; padding: 20px;">
-                        <h1 style="color: #ef4444; margin-bottom: 20px;">Initialization Error</h1>
-                        <p style="margin-bottom: 20px; line-height: 1.6;">${err.message || 'An unknown error occurred during initialization'}</p>
+                        <h1 style="color: #ef4444; margin-bottom: 20px;">Hop on a supported device!</h1>
+                        <p style="margin-bottom: 20px; line-height: 1.6;">${err.message || 'This site needs service workers.'}</p>
                         <p style="color: #a1a1a1; font-size: 14px; margin-bottom: 20px;">Check the browser console (F12) for more details.</p>
                         <button onclick="location.reload()" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;">Retry</button>
                     </div>
