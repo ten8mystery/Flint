@@ -1768,5 +1768,17 @@
     "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/753.html",
     "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/753.png",
     "description": "Game Active"
+  },
+ {
+    "name": "Worst Time Simulator",
+    "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/747.html",
+    "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/747.png",
+    "description": "Game Active"
+  },
+ {
+    "name": "Undertale Last Breath PHASE THREE",
+    "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/748.html",
+    "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/748.png",
+    "description": "Game Active"
   }
 ]
