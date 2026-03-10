@@ -446,22 +446,7 @@ function updateAddressBar() {
     }
 }
 
-function handleSubmit(url) {
-    const tab = getActiveTab();
-    let input = url ?? document.getElementById("address-bar").value.trim();
-    if (!input) return;
-
-    if (!input.startsWith('http')) {
-        input = input.includes('.') && !input.includes(' ') 
-            ? `https://${input}`
-            : `https://search.brave.com/search?q=${encodeURIComponent(input)}`;
-    }
-    
-    tab.loading = true;
-    showIframeLoading(true, input);
-    updateLoadingBar(tab, 10);
-    tab.frame.go(input);
-}
+v
 
 function updateLoadingBar(tab, percent) {
     if (tab.id !== activeTabId) return;
@@ -478,10 +463,45 @@ function openSettings() {
     const modal = document.getElementById('wisp-settings-modal');
     modal.classList.remove('hidden');
 
+    // Close button logic
     document.getElementById('close-wisp-modal').onclick = () => modal.classList.add('hidden');
-    document.getElementById('save-custom-wisp').onclick = saveCustomWisp;
+    
+    // Sidebar Navigation Logic
+    const sidebarItems = modal.querySelectorAll('.sidebar-item');
+    const panes = modal.querySelectorAll('.settings-pane');
 
+    sidebarItems.forEach(item => {
+        item.onclick = () => {
+            // Remove active class from all items and hide all panes
+            sidebarItems.forEach(i => i.classList.remove('active'));
+            panes.forEach(p => p.classList.add('hidden'));
+
+            // Activate clicked item and corresponding pane
+            item.classList.add('active');
+            const targetPane = item.getAttribute('data-pane');
+            document.getElementById(targetPane).classList.remove('hidden');
+        };
+    });
+
+    // Handle Search Engine Persistence
+    const engineSelect = document.getElementById('search-engine-select');
+    const savedEngine = localStorage.getItem('searchEngine');
+    if (savedEngine) engineSelect.value = savedEngine;
+    engineSelect.onchange = (e) => localStorage.setItem('searchEngine', e.target.value);
+
+    // Handle Startup Toggle Persistence
+    const startupToggle = document.getElementById('startup-tab-toggle');
+    const isStartupEnabled = localStorage.getItem('startupTab') !== 'false';
+    startupToggle.classList.toggle('active', isStartupEnabled);
+    startupToggle.onclick = () => {
+        const newState = !startupToggle.classList.contains('active');
+        startupToggle.classList.toggle('active', newState);
+        localStorage.setItem('startupTab', newState);
+    };
+
+    // Close on background click
     modal.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
+    
     renderServerList();
 }
 
@@ -727,21 +747,49 @@ document.addEventListener('DOMContentLoaded', async function () {
             reg.update();
         }
 
-        await initializeBrowser();
-    } catch (err) {
-        console.error("Initialization error:", err);
-        // Show error to user if initialization fails
-        const root = document.getElementById('app');
-        if (root) {
-            root.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: center; height: 100vh; font-family: Arial, sans-serif; background: #0a0a0a; color: #e4e4e7;">
-                    <div style="text-align: center; max-width: 600px; padding: 20px;">
-                        <h1 style="color: #ef4444; margin-bottom: 20px;">Hop on a supported device!</h1>
-                        <p style="margin-bottom: 20px; line-height: 1.6;">${err.message || 'This site needs service workers.'}</p>
-                        <p style="color: #a1a1a1; font-size: 14px; margin-bottom: 20px;">Check the browser console (F12) for more details.</p>
-                        <button onclick="location.reload()" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;">Retry</button>
+async function initializeBrowser() {
+    const root = document.getElementById("app");
+    root.innerHTML = `
+        <div class="browser-container">
+            <div class="flex tabs" id="tabs-container"></div>
+            <div class="flex nav">
+                <button id="back-btn" title="Back"><i class="fa-solid fa-chevron-left"></i></button>
+                <button id="fwd-btn" title="Forward"><i class="fa-solid fa-chevron-right"></i></button>
+                <button id="reload-btn" title="Reload"><i class="fa-solid fa-rotate-right"></i></button>
+                <div class="address-wrapper">
+                    <input class="bar" id="address-bar" autocomplete="off" placeholder="Search or enter URL">
+                    <button id="home-btn-nav" title="Home"><i class="fa-solid fa-house"></i></button>
+                </div>
+                <button id="devtools-btn" title="DevTools"><i class="fa-solid fa-code"></i></button>
+                <button id="wisp-settings-btn" title="Proxy Settings"><i class="fa-solid fa-gear"></i></button>
+            </div>
+            <div class="loading-bar-container"><div class="loading-bar" id="loading-bar"></div></div>
+            <div class="iframe-container" id="iframe-container">
+                <div id="loading" class="message-container" style="display: none;">
+                    <div class="message-content">
+                        <div class="spinner"></div>
+                        <h1 id="loading-title">Connecting</h1>
+                        <p id="loading-url">Initializing...</p>
+                        <button id="skip-btn">Skip</button>
                     </div>
                 </div>
+            </div>
+        </div>`;
+
+    // Re-bind the Settings button and other nav buttons
+    document.getElementById('wisp-settings-btn').onclick = openSettings;
+    document.getElementById('back-btn').onclick = () => getActiveTab()?.frame.back();
+    document.getElementById('fwd-btn').onclick = () => getActiveTab()?.frame.forward();
+    document.getElementById('reload-btn').onclick = () => getActiveTab()?.frame.reload();
+    document.getElementById('address-bar').onkeyup = (e) => e.key === 'Enter' && handleSubmit();
+    
+    // Check startup preference before creating first tab
+    if (localStorage.getItem('startupTab') !== 'false') {
+        createTab(true);
+    }
+    
+    checkHashParameters();
+}
             `;
         }
     }
