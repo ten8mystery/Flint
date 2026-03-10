@@ -448,6 +448,8 @@ function updateAddressBar() {
 
 function handleSubmit(url) {
     const tab = getActiveTab();
+    if (!tab) return;
+
     let input = url ?? document.getElementById("address-bar").value.trim();
     if (!input) return;
 
@@ -456,10 +458,17 @@ function handleSubmit(url) {
         const engine = localStorage.getItem("searchEngine") || "https://search.brave.com/search?q=";
         
         // Check if it's a URL like "google.com" or a search like "how to cook"
-        input = input.includes('.') && !input.includes(' ') 
+        input = (input.includes('.') && !input.includes(' ')) 
                 ? `https://${input}` 
                 : engine + encodeURIComponent(input);
     }
+    
+    // UI Updates
+    tab.loading = true;
+    showIframeLoading(true, input);
+    updateLoadingBar(tab, 10);
+
+    // Scramjet specific: Use the 'go' method on the frame instance
     tab.frame.go(input);
 }
     
