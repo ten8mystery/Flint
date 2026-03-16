@@ -58,11 +58,5 @@
     "src": "../embed.html#https://www.chess.com",
     "image": "https://play-lh.googleusercontent.com/a7R5nyeaX8lIEWdBOxjlvbyq9LcFwh3XMvNtBPEKR3LPGgdvgGrec4sJwn8tUaaSkw=s256-rw",
     "description": "iframe"
-  },
-  {
-    "name": "Windows XP",
-    "src": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/refs/heads/main/windowsxp.html",
-    "image": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/refs/heads/main/windowsxp.png",
-    "description": "Game Active"
   }
 ]
