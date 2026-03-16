@@ -371,49 +371,71 @@ function appendGame(game) {
       if (game.description === "iframe") {
         iframe.src = game.src;
 
-      } else if (game.description === "custom") {
-        // ✅ Dynamically fetch the URL from the API endpoint
-        const response = await fetch(game.src);
-        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-
-        const contentType = response.headers.get("content-type");
-        let targetUrl = "";
-
-        // Check if the API returned JSON or plain text
-        if (contentType && contentType.includes("application/json")) {
-          const data = await response.json();
-          // Relaxed parsing: grab the URL even if there's no "status: success"
-          targetUrl = data.url || data.link || data.src; 
-        } else {
-          // Fallback just in case the API returns the raw URL string
-          targetUrl = await response.text();
-        }
-
-        if (targetUrl && typeof targetUrl === "string") {
-          iframe.src = targetUrl.trim();
-        } else {
-          throw new Error("Invalid API response: Could not extract URL");
-        }
-
-      } else {
-        // Inject HTML manually
-        const response = await fetch(game.src);
-        const html = await response.text();
-        const doc = iframe.contentDocument || iframe.contentWindow.document;
-        doc.open();
-        doc.write(html);
-        doc.close();
+} else if (game.description === "custom") {
+        // 1. Open the blank tab IMMEDIATELY on click to bypass pop-up blockers
+        const win = window.open('about:blank', '_blank');
         
-        // Manual loader removal because doc.write() doesn't consistently fire iframe.onload
-        $('#loader').classList.remove('show'); 
+        if (!win) {
+          // If the browser blocks the pop-up, alert the user and stop
+          $('#loader').classList.remove('show');
+          alert("Pop-up blocked! Please allow pop-ups for this site to open Virtual Machines.");
+          return;
+        }
+
+        // Add a temporary loading message to the new tab while we fetch the API
+        win.document.body.innerHTML = '<h2 style="font-family:sans-serif; text-align:center; margin-top:20vh; color:#333;">Starting Virtual Machine...</h2>';
+        
+        // Hide your main dashboard overlay/loader since we are moving to the new tab
+        $('#loader').classList.remove('show');
+        overlay.style.display = 'none';
+
+        try {
+          // 2. Fetch the API endpoint (the URL in the game's JSON src)
+          const response = await fetch(game.src);
+          if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+          const contentType = response.headers.get("content-type");
+          let targetUrl = "";
+
+          // Parse the API response to get the actual VM URL
+          if (contentType && contentType.includes("application/json")) {
+            const data = await response.json();
+            targetUrl = data.url || data.link || data.src; 
+          } else {
+            targetUrl = await response.text();
+          }
+
+          if (targetUrl && typeof targetUrl === "string") {
+            targetUrl = targetUrl.trim();
+            
+            // 3. Set up the about:blank window to fill the screen
+            win.document.body.innerHTML = ''; // clear loading text
+            win.document.body.style.margin = '0';
+            win.document.body.style.height = '100vh';
+            win.document.body.style.overflow = 'hidden';
+            
+            // 4. Create an iframe inside the new tab to host the VM
+            const newIframe = win.document.createElement('iframe');
+            newIframe.style.border = 'none';
+            newIframe.style.width = '100vw';
+            newIframe.style.height = '100vh';
+            newIframe.style.margin = '0';
+            newIframe.allow = 'autoplay; fullscreen; gamepad; accelerometer; gyroscope; pointer-lock; microphone';
+            newIframe.src = targetUrl;
+            
+            // 5. Append the iframe
+            win.document.body.appendChild(newIframe);
+
+          } else {
+            win.document.body.innerHTML = '<h2 style="text-align:center;color:red;">Error: API did not return a valid URL.</h2>';
+            throw new Error("Invalid API response: Could not extract URL");
+          }
+        } catch (apiError) {
+          // If the API fetch fails, show the error in the new tab
+          win.document.body.innerHTML = `<h2 style="text-align:center;color:red;">Failed to start VM:<br>${apiError.message}</h2>`;
+          console.error("Custom VM Fetch Error:", apiError);
+        }
       }
-      
-    } catch (err) {
-      console.error("Error loading Virtual Machine:", err);
-      $('#loader').classList.remove('show');
-      alert("Failed to start the Virtual Machine. Please check the console.");
-    }
-  });
 
   gameList.appendChild(a);
 }
