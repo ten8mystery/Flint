@@ -1,7 +1,7 @@
 [
   {
     "name": "Ubuntu",
-    "src": "http://ec2-18-219-58-159.us-east-2.compute.amazonaws.com:47661/",
+    "src": "http://ec2-18-219-58-159.us-east-2.compute.amazonaws.com:8000/api/create?developer_id=tuffestzinc&site_limit=1000&delete_after=60",
     "image": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/refs/heads/main/ubuntu.png",
     "description": "custom"
   },
