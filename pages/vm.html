@@ -401,13 +401,15 @@
         <span class="shortcut-label">${game.name}</span>
       `;
 
-      a.addEventListener('click', async e => {
+a.addEventListener('click', async e => {
         e.preventDefault();
 
         $('#loader').classList.add('show');
         overlay.style.display = 'flex';
 
         const iframe = createFreshIframe();
+        
+        // Hide loader once the final iframe content loads
         iframe.onload = () => $('#loader').classList.remove('show');
 
         try {
@@ -415,19 +417,28 @@
             iframe.src = game.src;
 
           } else if (game.description === "custom") {
-            // Fetch the JSON from the API
-            const response = await fetch(game.src);
+            
+            // Explicitly request JSON to help with API formatting
+            const response = await fetch(game.src, {
+              headers: {
+                'Accept': 'application/json'
+              }
+            });
+            
             if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
-            // Parse the data and extract the URL
-            const data = await response.json();
+            // Fetch as plain text first, then parse. 
+            // This prevents crashes if the API accidentally returns the JSON as "text/plain"
+            const rawText = await response.text();
+            const data = JSON.parse(rawText);
+            
             const targetUrl = data.url; 
 
-            // Load the extracted URL into the iframe
+            // Load the extracted URL into the iframe (ignoring http vs https as requested)
             if (targetUrl) {
               iframe.src = targetUrl;
             } else {
-              throw new Error("Invalid API response: No URL found.");
+              throw new Error("Invalid API response: No 'url' key found.");
             }
 
           } else {
