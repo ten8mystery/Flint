@@ -407,23 +407,30 @@ a.addEventListener('click', async e => {
         $('#loader').classList.add('show');
         overlay.style.display = 'flex';
 
-        const iframe = createFreshIframe();
-        
-        // Hide loader once the final iframe content loads
-        iframe.onload = () => $('#loader').classList.remove('show');
+function createFreshIframe() {
+      iframeContainer.innerHTML = '';
+      const iframe = document.createElement('iframe');
+      
+      // Feature permissions (Camera, Mic, Fullscreen, etc.)
+      iframe.allow = 'autoplay; fullscreen; gamepad; accelerometer; gyroscope; pointer-lock; microphone';
+      
+      // Sandbox permissions for redirects, popups, and top-level navigation
+      iframe.setAttribute('sandbox', 
+        'allow-scripts ' +
+        'allow-same-origin ' +
+        'allow-forms ' +
+        'allow-popups ' +
+        'allow-popups-to-escape-sandbox ' +
+        'allow-top-navigation ' + 
+        'allow-top-navigation-by-user-activation ' +
+        'allow-pointer-lock ' +
+        'allow-downloads'
+      );
 
-        try {
-          if (game.description === "iframe") {
-            iframe.src = game.src;
-
-          } else if (game.description === "custom") {
-            
-            // Explicitly request JSON to help with API formatting
-            const response = await fetch(game.src, {
-              headers: {
-                'Accept': 'application/json'
-              }
-            });
+      iframeContainer.appendChild(iframe);
+      currentIframe = iframe;
+      return iframe;
+    }
             
             if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
