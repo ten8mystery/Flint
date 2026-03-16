@@ -66,18 +66,24 @@
       z-index: 2000;
     }
 
-    .loader.show { display: flex; }
+    .loader.show {
+      display: flex;
+    }
 
     .spinner {
       width: 40px;
       height: 40px;
-      border: 3px solid rgba(255,255,255,0.1);
+      border: 3px solid rgba(255, 255, 255, 0.1);
       border-top-color: #ffffff;
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;    
+      animation: spin 0.8s linear infinite;
     }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     .main-container {
       display: flex;
@@ -158,6 +164,8 @@
       cursor: pointer;
       text-decoration: none;
       transition: transform 0.2s ease;
+      content-visibility: auto;
+      contain-intrinsic-size: 140px;
     }
 
     .shortcut:hover {
@@ -176,7 +184,7 @@
       justify-content: center;
       transition: all 0.3s ease;
       overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
 
     .shortcut-icon img {
@@ -251,24 +259,21 @@
       background: #000;
       box-shadow: var(--shadow-soft);
     }
-    
-    .shortcut {
-  content-visibility: auto;
-  contain-intrinsic-size: 140px;
-}
   </style>
 </head>
 
 <body>
   <canvas id="particles"></canvas>
-  <div class="loader" id="loader"><div class="spinner"></div></div>
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+  </div>
 
   <div class="main-container">
     <div class="title-section">
       <h1 class="title">Virtual Machines</h1>
       <div class="subtitle"></div>
     </div>
-    
+
     <div class="search-card">
       <form class="search-box" id="searchForm" autocomplete="off" onsubmit="event.preventDefault();">
         <i class="fa-solid fa-magnifying-glass"></i>
@@ -287,302 +292,17 @@
     <div id="iframeContainer"></div>
   </div>
 
-<script>
-const $ = s => document.querySelector(s);
-
-const searchInput = $('#searchInput');
-const gameList = $('#gameList');
-const overlay = $('#iframeOverlay');
-const closeBtn = $('#closeBtn');
-const fullscreenBtn = $('#fullscreenBtn');
-const iframeContainer = $('#iframeContainer');
-
-let allGames = [];
-let renderedStart = 0;
-const BATCH_SIZE = 24;
-let currentIframe = null;
-
-function createFreshIframe() {
-  iframeContainer.innerHTML = '';
-  const iframe = document.createElement('iframe');
-  iframe.allow = 'autoplay; fullscreen; gamepad; accelerometer; gyroscope; pointer-lock; microphone';
-  iframeContainer.appendChild(iframe);
-  currentIframe = iframe;
-  return iframe;
-}
-
-const priorityGames = ["[!] REQUEST GAME", "", ""];
-
-fetch('https://raw.githubusercontent.com/ten8mystery/Flint/main/data/vm.json')
-  .then(res => res.json())
-  .then(data => {
-    data.sort((a, b) => {
-      const ai = priorityGames.indexOf(a.name);
-      const bi = priorityGames.indexOf(b.name);
-      if (ai !== -1 && bi !== -1) return ai - bi;
-      if (ai !== -1) return -1;
-      if (bi !== -1) return 1;
-      return a.name.localeCompare(b.name);
-    });
-    
-    // ✅ STORE GAMES
-    allGames = data;
-
-    // ✅ FIRST RENDER
-    renderBatch(true);
-  });
-
-window.addEventListener('scroll', () => {
-  const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 500;
-  
-  // Only load more batches if the search bar is empty
-  if (nearBottom && searchInput.value.trim() === '') {
-    renderBatch();
-  }
-});
-
-// ✅ HELPER: Create and append a single game card
-function appendGame(game) {
-  const a = document.createElement('a');
-  a.className = 'shortcut';
-  a.dataset.name = game.name;
-
-  a.innerHTML = `
-    <div class="shortcut-icon">
-      <img loading="lazy"
-      src="${game.image}"
-      onerror="this.src='https://via.placeholder.com/100?text=?'">
-    </div>
-    <span class="shortcut-label">${game.name}</span>
-  `;
-
-  a.addEventListener('click', async e => {
-    e.preventDefault();
-
-    $('#loader').classList.add('show');
-    overlay.style.display = 'flex';
-
-    const iframe = createFreshIframe();
-    iframe.onload = () => $('#loader').classList.remove('show');
-
-    try {
-      if (game.description === "iframe") {
-        iframe.src = game.src;
-
-      } else if (game.description === "custom") {
-        const win = window.open('about:blank', '_blank');
-        if (!win) {
-          $('#loader').classList.remove('show');
-          alert("Pop-up blocked! Please allow pop-ups for this site.");
-          return;
-        }
-
-        win.document.body.innerHTML = '<h2 style="font-family:sans-serif; text-align:center; margin-top:20vh; color:#333;">Starting Virtual Machine...</h2>';
-        $('#loader').classList.remove('show');
-        overlay.style.display = 'none';
-
-        try {
-          const response = await fetch(game.src);
-          if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-
-          const contentType = response.headers.get("content-type");
-          let targetUrl = "";
-
-          if (contentType && contentType.includes("application/json")) {
-            const data = await response.json();
-            targetUrl = data.url || data.link || data.src;
-          } else {
-            targetUrl = await response.text();
-          }
-
-          if (targetUrl && typeof targetUrl === "string") {
-            targetUrl = targetUrl.trim();
-            win.document.body.innerHTML = '';
-            win.document.body.style.margin = '0';
-            win.document.body.style.height = '100vh';
-            win.document.body.style.overflow = 'hidden';
-
-            const newIframe = win.document.createElement('iframe');
-            newIframe.style.border = 'none';
-            newIframe.style.width = '100vw';
-            newIframe.style.height = '100vh';
-            newIframe.style.margin = '0';
-            newIframe.allow = 'autoplay; fullscreen; gamepad; accelerometer; gyroscope; pointer-lock; microphone';
-            newIframe.src = targetUrl;
-            win.document.body.appendChild(newIframe);
-          } else {
-            throw new Error("Invalid API response: No URL found.");
-          }
-        } catch (apiError) {
-          win.document.body.innerHTML = `<h2 style="text-align:center;color:red;">Error: ${apiError.message}</h2>`;
-        }
-
-      } else {
-        // Handle standard HTML injection games
-        const response = await fetch(game.src);
-        const html = await response.text();
-        const doc = iframe.contentDocument || iframe.contentWindow.document;
-        doc.open();
-        doc.write(html);
-        doc.close();
-        $('#loader').classList.remove('show');
-      }
-    } catch (err) {
-      console.error("Error loading VM:", err);
-      $('#loader').classList.remove('show');
-      alert("Failed to start the Virtual Machine.");
-    }
-  });
-
-  gameList.appendChild(a);
-}function appendGame(game) {
-  const a = document.createElement('a');
-  a.className = 'shortcut';
-  a.dataset.name = game.name;
-
-  a.innerHTML = `
-    <div class="shortcut-icon">
-      <img loading="lazy"
-      src="${game.image}"
-      onerror="this.src='https://via.placeholder.com/100?text=?'">
-    </div>
-    <span class="shortcut-label">${game.name}</span>
-  `;
-
-  a.addEventListener('click', async e => {
-    e.preventDefault();
-
-    $('#loader').classList.add('show');
-    overlay.style.display = 'flex';
-
-    const iframe = createFreshIframe();
-    iframe.onload = () => $('#loader').classList.remove('show');
-
-    try {
-      if (game.description === "iframe") {
-        iframe.src = game.src;
-
-      } else if (game.description === "custom") {
-        const win = window.open('about:blank', '_blank');
-        if (!win) {
-          $('#loader').classList.remove('show');
-          alert("Pop-up blocked! Please allow pop-ups for this site.");
-          return;
-        }
-
-        win.document.body.innerHTML = '<h2 style="font-family:sans-serif; text-align:center; margin-top:20vh; color:#333;">Starting Virtual Machine...</h2>';
-        $('#loader').classList.remove('show');
-        overlay.style.display = 'none';
-
-        try {
-          const response = await fetch(game.src);
-          if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-
-          const contentType = response.headers.get("content-type");
-          let targetUrl = "";
-
-          if (contentType && contentType.includes("application/json")) {
-            const data = await response.json();
-            targetUrl = data.url || data.link || data.src;
-          } else {
-            targetUrl = await response.text();
-          }
-
-          if (targetUrl && typeof targetUrl === "string") {
-            targetUrl = targetUrl.trim();
-            win.document.body.innerHTML = '';
-            win.document.body.style.margin = '0';
-            win.document.body.style.height = '100vh';
-            win.document.body.style.overflow = 'hidden';
-
-            const newIframe = win.document.createElement('iframe');
-            newIframe.style.border = 'none';
-            newIframe.style.width = '100vw';
-            newIframe.style.height = '100vh';
-            newIframe.style.margin = '0';
-            newIframe.allow = 'autoplay; fullscreen; gamepad; accelerometer; gyroscope; pointer-lock; microphone';
-            newIframe.src = targetUrl;
-            win.document.body.appendChild(newIframe);
-          } else {
-            throw new Error("Invalid API response: No URL found.");
-          }
-        } catch (apiError) {
-          win.document.body.innerHTML = `<h2 style="text-align:center;color:red;">Error: ${apiError.message}</h2>`;
-        }
-
-      } else {
-        // Handle standard HTML injection games
-        const response = await fetch(game.src);
-        const html = await response.text();
-        const doc = iframe.contentDocument || iframe.contentWindow.document;
-        doc.open();
-        doc.write(html);
-        doc.close();
-        $('#loader').classList.remove('show');
-      }
-    } catch (err) {
-      console.error("Error loading VM:", err);
-      $('#loader').classList.remove('show');
-      alert("Failed to start the Virtual Machine.");
-    }
-  });
-
-  gameList.appendChild(a);
-}
-
-function renderBatch(reset = false) {
-  if (reset) {
-    gameList.innerHTML = '';
-    renderedStart = 0;
-  }
-
-  const end = renderedStart + BATCH_SIZE;
-  const slice = allGames.slice(renderedStart, end);
-
-  slice.forEach(appendGame);
-  renderedStart += BATCH_SIZE;
-}
-
-searchInput.addEventListener('input', () => {
-  const q = searchInput.value.toLowerCase().trim();
-
-  // If search is cleared, reset to standard batch rendering
-  if (q === '') {
-    renderBatch(true);
-    return;
-  }
-
-  const filteredGames = allGames.filter(game => 
-    game.name.toLowerCase().includes(q)
-  );
-
-  gameList.innerHTML = '';
-  filteredGames.forEach(appendGame);
-});
-
-closeBtn.onclick = () => {
-  overlay.style.display = 'none';
-  if (currentIframe) currentIframe.src = 'about:blank';
-  iframeContainer.innerHTML = '';
-  currentIframe = null;
-  resize(); // Assuming this is for your canvas particles
-};
-
-fullscreenBtn.onclick = () => {
-  if (!currentIframe) return;
-  currentIframe.requestFullscreen?.();
-};
-</script>
-
   <script>
+    // --- PARTICLE BACKGROUND LOGIC ---
     const canvas = document.getElementById("particles");
     const ctx = canvas.getContext("2d");
-    function resize() { 
-        canvas.width = window.innerWidth; 
-        canvas.height = window.innerHeight; 
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     }
     resize();
-    window.onresize = resize;
+    window.addEventListener('resize', resize);
 
     let particles = [];
     class Particle {
@@ -595,23 +315,214 @@ fullscreenBtn.onclick = () => {
         this.alpha = 0.1 + Math.random() * 0.2;
       }
       update() {
-        this.x += this.vx; this.y += this.vy;
+        this.x += this.vx;
+        this.y += this.vy;
         if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
         if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
       }
       draw() {
-        ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
         ctx.fill();
       }
     }
+
     for (let i = 0; i < 50; i++) particles.push(new Particle());
+
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach(p => { p.update(); p.draw(); });
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
       requestAnimationFrame(animate);
     }
     animate();
+
+    // --- MAIN LOGIC ---
+    const $ = s => document.querySelector(s);
+
+    const searchInput = $('#searchInput');
+    const gameList = $('#gameList');
+    const overlay = $('#iframeOverlay');
+    const closeBtn = $('#closeBtn');
+    const fullscreenBtn = $('#fullscreenBtn');
+    const iframeContainer = $('#iframeContainer');
+
+    let allGames = [];
+    let renderedStart = 0;
+    const BATCH_SIZE = 24;
+    let currentIframe = null;
+
+    function createFreshIframe() {
+      iframeContainer.innerHTML = '';
+      const iframe = document.createElement('iframe');
+      iframe.allow = 'autoplay; fullscreen; gamepad; accelerometer; gyroscope; pointer-lock; microphone';
+      iframeContainer.appendChild(iframe);
+      currentIframe = iframe;
+      return iframe;
+    }
+
+    const priorityGames = ["[!] REQUEST GAME", "", ""];
+
+    fetch('https://raw.githubusercontent.com/ten8mystery/Flint/main/data/vm.json')
+      .then(res => res.json())
+      .then(data => {
+        data.sort((a, b) => {
+          const ai = priorityGames.indexOf(a.name);
+          const bi = priorityGames.indexOf(b.name);
+          if (ai !== -1 && bi !== -1) return ai - bi;
+          if (ai !== -1) return -1;
+          if (bi !== -1) return 1;
+          return a.name.localeCompare(b.name);
+        });
+
+        allGames = data;
+        renderBatch(true);
+      });
+
+    window.addEventListener('scroll', () => {
+      const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 500;
+      if (nearBottom && searchInput.value.trim() === '') {
+        renderBatch();
+      }
+    });
+
+    function appendGame(game) {
+      const a = document.createElement('a');
+      a.className = 'shortcut';
+      a.dataset.name = game.name;
+
+      a.innerHTML = `
+        <div class="shortcut-icon">
+          <img loading="lazy" src="${game.image}" onerror="this.src='https://via.placeholder.com/100?text=?'">
+        </div>
+        <span class="shortcut-label">${game.name}</span>
+      `;
+
+      a.addEventListener('click', async e => {
+        e.preventDefault();
+
+        $('#loader').classList.add('show');
+        overlay.style.display = 'flex';
+
+        const iframe = createFreshIframe();
+        iframe.onload = () => $('#loader').classList.remove('show');
+
+        try {
+          if (game.description === "iframe") {
+            iframe.src = game.src;
+
+          } else if (game.description === "custom") {
+            const win = window.open('about:blank', '_blank');
+            if (!win) {
+              $('#loader').classList.remove('show');
+              alert("Pop-up blocked! Please allow pop-ups for this site.");
+              return;
+            }
+
+            win.document.body.innerHTML = '<h2 style="font-family:sans-serif; text-align:center; margin-top:20vh; color:#333;">Starting Virtual Machine...</h2>';
+            $('#loader').classList.remove('show');
+            overlay.style.display = 'none';
+
+            try {
+              const response = await fetch(game.src);
+              if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+              const contentType = response.headers.get("content-type");
+              let targetUrl = "";
+
+              if (contentType && contentType.includes("application/json")) {
+                const data = await response.json();
+                targetUrl = data.url || data.link || data.src;
+              } else {
+                targetUrl = await response.text();
+              }
+
+              if (targetUrl && typeof targetUrl === "string") {
+                targetUrl = targetUrl.trim();
+                win.document.body.innerHTML = '';
+                win.document.body.style.margin = '0';
+                win.document.body.style.height = '100vh';
+                win.document.body.style.overflow = 'hidden';
+
+                const newIframe = win.document.createElement('iframe');
+                newIframe.style.border = 'none';
+                newIframe.style.width = '100vw';
+                newIframe.style.height = '100vh';
+                newIframe.style.margin = '0';
+                newIframe.allow = 'autoplay; fullscreen; gamepad; accelerometer; gyroscope; pointer-lock; microphone';
+                newIframe.src = targetUrl;
+                win.document.body.appendChild(newIframe);
+              } else {
+                throw new Error("Invalid API response: No URL found.");
+              }
+            } catch (apiError) {
+              win.document.body.innerHTML = `<h2 style="text-align:center;color:red;">Error: ${apiError.message}</h2>`;
+            }
+
+          } else {
+            const response = await fetch(game.src);
+            const html = await response.text();
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            doc.open();
+            doc.write(html);
+            doc.close();
+            $('#loader').classList.remove('show');
+          }
+        } catch (err) {
+          console.error("Error loading VM:", err);
+          $('#loader').classList.remove('show');
+          alert("Failed to start the Virtual Machine.");
+        }
+      });
+
+      gameList.appendChild(a);
+    }
+
+    function renderBatch(reset = false) {
+      if (reset) {
+        gameList.innerHTML = '';
+        renderedStart = 0;
+      }
+
+      const end = renderedStart + BATCH_SIZE;
+      const slice = allGames.slice(renderedStart, end);
+
+      slice.forEach(appendGame);
+      renderedStart += BATCH_SIZE;
+    }
+
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.toLowerCase().trim();
+
+      if (q === '') {
+        renderBatch(true);
+        return;
+      }
+
+      const filteredGames = allGames.filter(game =>
+        game.name.toLowerCase().includes(q)
+      );
+
+      gameList.innerHTML = '';
+      filteredGames.forEach(appendGame);
+    });
+
+    closeBtn.onclick = () => {
+      overlay.style.display = 'none';
+      if (currentIframe) currentIframe.src = 'about:blank';
+      iframeContainer.innerHTML = '';
+      currentIframe = null;
+      resize(); // Correctly scoped to the particle canvas resize function now
+    };
+
+    fullscreenBtn.onclick = () => {
+      if (!currentIframe) return;
+      currentIframe.requestFullscreen?.();
+    };
   </script>
 </body>
+
 </html>
