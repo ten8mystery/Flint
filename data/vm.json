@@ -1,9 +1,9 @@
 [
   {
     "name": "Ubuntu",
-    "src": "https://ec2-18-219-58-159.us-east-2.compute.amazonaws.com/api/create?developer_id=tuffestzinc&site_limit=1000&delete_after=60",
+    "src": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/refs/heads/main/ubuntu.html",
     "image": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/refs/heads/main/ubuntu.png",
-    "description": "custom"
+    "description": "Game Active"
   },
   {
     "name": "Windows XP",
