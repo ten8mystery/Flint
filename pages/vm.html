@@ -356,57 +356,67 @@ function appendGame(game) {
     <span class="shortcut-label">${game.name}</span>
   `;
 
-  a.addEventListener('click', e => {
+  a.addEventListener('click', async e => {
     e.preventDefault();
 
     $('#loader').classList.add('show');
     overlay.style.display = 'flex';
 
     const iframe = createFreshIframe();
+    
+    // Attach onload BEFORE setting the source to prevent race conditions
+    iframe.onload = () => $('#loader').classList.remove('show');
 
-    if (game.description === "iframe") {
-      iframe.src = game.src;
-      iframe.onload = () => $('#loader').classList.remove('show');
-      
-    } else if (game.description === "custom") {
-      // ✅ Fetch the URL dynamically from the API endpoint
-      fetch(game.src)
-        .then(r => r.json())
-        .then(data => {
-          if (data.status === "success" && data.url) {
-            iframe.src = data.url;
-            iframe.onload = () => $('#loader').classList.remove('show');
-          } else {
-            console.error("Failed to load custom VM or missing URL:", data);
-            $('#loader').classList.remove('show');
-            // Optional: Alert the user that the VM failed to start
-          }
-        })
-        .catch(err => {
-          console.error("Error fetching custom VM API:", err);
-          $('#loader').classList.remove('show');
-        });
+    try {
+      if (game.description === "iframe") {
+        iframe.src = game.src;
+
+      } else if (game.description === "custom") {
+        // ✅ Dynamically fetch the URL from the API endpoint
+        const response = await fetch(game.src);
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+        const contentType = response.headers.get("content-type");
+        let targetUrl = "";
+
+        // Check if the API returned JSON or plain text
+        if (contentType && contentType.includes("application/json")) {
+          const data = await response.json();
+          // Relaxed parsing: grab the URL even if there's no "status: success"
+          targetUrl = data.url || data.link || data.src; 
+        } else {
+          // Fallback just in case the API returns the raw URL string
+          targetUrl = await response.text();
+        }
+
+        if (targetUrl && typeof targetUrl === "string") {
+          iframe.src = targetUrl.trim();
+        } else {
+          throw new Error("Invalid API response: Could not extract URL");
+        }
+
+      } else {
+        // Inject HTML manually
+        const response = await fetch(game.src);
+        const html = await response.text();
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        doc.open();
+        doc.write(html);
+        doc.close();
         
-    } else {
-      fetch(game.src)
-        .then(r => r.text())
-        .then(html => {
-          const doc = iframe.contentDocument || iframe.contentWindow.document;
-          doc.open();
-          doc.write(html);
-          doc.close();
-          $('#loader').classList.remove('show');
-        })
-        .catch(err => {
-          console.error("Error fetching HTML content:", err);
-          $('#loader').classList.remove('show');
-        });
+        // Manual loader removal because doc.write() doesn't consistently fire iframe.onload
+        $('#loader').classList.remove('show'); 
+      }
+      
+    } catch (err) {
+      console.error("Error loading Virtual Machine:", err);
+      $('#loader').classList.remove('show');
+      alert("Failed to start the Virtual Machine. Please check the console.");
     }
   });
 
   gameList.appendChild(a);
 }
-
 function renderBatch(reset = false) {
   if (reset) {
     gameList.innerHTML = '';
