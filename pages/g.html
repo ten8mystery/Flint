@@ -253,9 +253,9 @@
     }
 
     .shortcut {
-      content-visibility: auto;
-      contain-intrinsic-size: 140px;
-    }
+  content-visibility: auto;
+  contain-intrinsic-size: 140px;
+}
   </style>
 </head>
 
@@ -302,62 +302,6 @@ let renderedStart = 0;
 const BATCH_SIZE = 65;
 let currentIframe = null;
 
-// Lightweight Adblocker Script to inject into fetched games
-const adBlockerScript = `
-  <script>
-    const adDomains = [
-      'doubleclick.net', 'googlesyndication.com', 'googleadservices.com', 
-      'amazon-adsystem.com', 'adnxs.com', 'ads.pubmatic.com', 'criteo.com',
-      'yandex.ru/ads', 'adform.net', 'rubiconproject.com', 'scorecardresearch.com'
-    ];
-    
-    const isAd = (url) => {
-      if (!url || typeof url !== 'string') return false;
-      return adDomains.some(domain => url.toLowerCase().includes(domain));
-    };
-
-    const origFetch = window.fetch;
-    window.fetch = function() {
-      const url = arguments[0] instanceof Request ? arguments[0].url : arguments[0];
-      if (isAd(url)) {
-        console.log('Blocked Ad Request (Fetch):', url);
-        return Promise.reject(new Error('Adblocked'));
-      }
-      return origFetch.apply(this, arguments);
-    };
-
-    const origOpen = XMLHttpRequest.prototype.open;
-    XMLHttpRequest.prototype.open = function(method, url) {
-      if (isAd(url)) {
-        console.log('Blocked Ad Request (XHR):', url);
-        this.send = () => {}; 
-        return;
-      }
-      origOpen.apply(this, arguments);
-    };
-    
-    const origCreateElement = document.createElement;
-    document.createElement = function(tagName) {
-      const el = origCreateElement.call(document, tagName);
-      if (tagName.toLowerCase() === 'script') {
-        Object.defineProperty(el, 'src', {
-          set: function(val) {
-            if (isAd(val)) {
-              console.log('Blocked Ad Script:', val);
-              return;
-            }
-            el.setAttribute('src', val);
-          },
-          get: function() {
-            return el.getAttribute('src');
-          }
-        });
-      }
-      return el;
-    };
-  <\\/script>
-`;
-
 function createFreshIframe() {
   iframeContainer.innerHTML = '';
   const iframe = document.createElement('iframe');
@@ -389,6 +333,7 @@ fetch('https://raw.githubusercontent.com/ten8mystery/Flint/main/data/games.json'
 window.addEventListener('scroll', () => {
   const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 500;
 
+  // Only load more batches if the search bar is empty
   if (nearBottom && searchInput.value.trim() === '') {
     renderBatch();
   }
@@ -425,15 +370,7 @@ function appendGame(game) {
         .then(html => {
           const doc = iframe.contentDocument || iframe.contentWindow.document;
           doc.open();
-          
-          let sanitizedHtml = html;
-          if (html.includes('<head>')) {
-            sanitizedHtml = html.replace('<head>', '<head>' + adBlockerScript);
-          } else {
-            sanitizedHtml = adBlockerScript + html; 
-          }
-
-          doc.write(sanitizedHtml);
+          doc.write(html);
           doc.close();
           $('#loader').classList.remove('show');
         });
@@ -459,6 +396,7 @@ function renderBatch(reset = false) {
 searchInput.addEventListener('input', () => {
   const q = searchInput.value.toLowerCase().trim();
 
+  // If search is cleared, reset to standard batch rendering
   if (q === '') {
     renderBatch(true);
     return;
@@ -477,7 +415,7 @@ closeBtn.onclick = () => {
   if (currentIframe) currentIframe.src = 'about:blank';
   iframeContainer.innerHTML = '';
   currentIframe = null;
-  resize(); 
+  resize(); // Assuming this is for your canvas particles
 };
 
 fullscreenBtn.onclick = () => {
