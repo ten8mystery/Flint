@@ -1786,5 +1786,11 @@
     "src": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/refs/heads/main/CheeseRolling.html",
     "image": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/refs/heads/main/cheeserolling.jpg",
     "description": "Game Active"
+  },
+  {
+    "name": "Hollow Knight: Silksong",
+    "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/771.html",
+    "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/771.png",
+    "description": "Game Active"
   }
 ]
