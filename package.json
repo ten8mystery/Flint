@@ -1,11 +1,22 @@
 {
-  "name": "flint-wisp",
-  "type": "module",
-  "dependencies": {
-    "@mercuryworkshop/wisp-js": "latest",
-    "express": "latest"
-  },
-  "scripts": {
-    "start": "node index.js"
-  }
+	"name": "flint",
+	"version": "1.0.0",
+	"type": "module",
+	"main": "index.js",
+	"engines": {
+		"node": ">=20.0.0"
+	},
+	"scripts": {
+		"start": "node index.js",
+		"dev": "node --watch index.js"
+	},
+	"author": "Flint Team",
+	"license": "GPL-3.0-or-later",
+	"dependencies": {
+		"@mercuryworkshop/wisp-js": "^1.1.0",
+		"express": "^5.0.1",
+		"chalk": "^5.4.1",
+		"dotenv": "^16.4.7",
+		"compression": "^1.8.1"
+	}
 }
