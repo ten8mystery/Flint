@@ -1,22 +1,17 @@
 {
-	"name": "flint",
-	"version": "1.0.0",
-	"type": "module",
-	"main": "index.js",
-	"engines": {
-		"node": ">=20.0.0"
-	},
-	"scripts": {
-		"start": "node index.js",
-		"dev": "node --watch index.js"
-	},
-	"author": "Flint Team",
-	"license": "GPL-3.0-or-later",
-	"dependencies": {
-		"@mercuryworkshop/wisp-js": "^1.1.0",
-		"express": "^5.0.1",
-		"chalk": "^5.4.1",
-		"dotenv": "^16.4.7",
-		"compression": "^1.8.1"
-	}
+  "name": "flint",
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@10.0.0",
+  "dependencies": {
+    "@mercuryworkshop/wisp-js": "^1.1.0",
+    "express": "^5.0.1",
+    "chalk": "^5.4.1",
+    "dotenv": "^16.4.7",
+    "compression": "^1.8.1"
+  }
 }
