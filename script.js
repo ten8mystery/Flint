@@ -6,7 +6,8 @@ const WISP_SERVERS = [
     { name: "Wisp 1", url: "wss://glseries.net/wisp/" },
     { name: "Wisp 2", url: "wss://wisp.rhw.one/wisp/" },
         { name: "Wisp 3", url: "wss://incog.works/wisp/" },
-        { name: "Wisp 4", url: "wss://lunarrr.eminescusm.ro/w/" }
+        { name: "Wisp 4", url: "wss://lunarrr.eminescusm.ro/w/" },
+        { name: "Wisp 5", url: "wss://dash.goip.de/wisp/" }
 ];
 
 // Initialize default proxy server if not set
@@ -20,9 +21,7 @@ function getAllWispServers() {
     return [...WISP_SERVERS, ...customWisps];
 }
 
-// =====================================================
-// PROACTIVE SERVER HEALTH CHECKING
-// =====================================================
+
 
 // Ping a wisp server to check if it's responsive
 async function pingWispServer(url, timeout = 2000) {
