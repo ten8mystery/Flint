@@ -1789,8 +1789,20 @@
   },
   {
     "name": "Hollow Knight: Silksong",
-    "src": "https://cdn.jsdelivr.net/gh/freebuisness/html@main/771.html",
+    "src": "https://cdn.jsdelivr.net/gh/freebuisness/html@main/771-z.html",
     "image": "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/771.png",
     "description": "Game Active"
-  }
+  },
+  {
+    "name": "Geometry Dash",
+    "src": "https://cdn.jsdelivr.net/gh/freebuisness/html@main/785-upd.html",
+    "image": "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/785.png",
+    "description": "Game Active"
+  },
+  {
+    "name": "Suika Game",
+    "src": "https://cdn.jsdelivr.net/gh/freebuisness/html@main/766.html",
+    "image": "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/766.png",
+    "description": "Game Active"
+  },
 ]
