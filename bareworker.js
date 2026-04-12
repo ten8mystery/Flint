@@ -1,2 +1,156 @@
-!function(){"use strict";const e=MessagePort.prototype.postMessage;let t=null;function a(e,t,a){console.error(`error while processing '${a}': `,t),e.postMessage({type:"error",error:t})}async function n(a,n,s){const o=await s.request(new URL(a.fetch.remote),a.fetch.method,a.fetch.body,a.fetch.headers,null);if(!function(){if(null===t){const a=new MessageChannel,n=new ReadableStream;let s;try{e.call(a.port1,n,[n]),s=!0}catch(e){s=!1}return t=s,s}return t}()&&o.body instanceof ReadableStream){const e=new Response(o.body);o.body=await e.arrayBuffer()}o.body instanceof ReadableStream||o.body instanceof ArrayBuffer?e.call(n,{type:"fetch",fetch:o},[o.body]):e.call(n,{type:"fetch",fetch:o})}let s=null,o="";function c(){return new Error("there are no bare clients",{cause:"No BareTransport was set. Try creating a BareMuxConnection and calling setTransport() or setManualTransport() on it before using BareClient."})}function r(t,a){const n=s;let o=[a];t.fetch?.body&&o.push(t.fetch.body),t.websocket?.channel&&o.push(t.websocket.channel),e.call(n,{message:t,port:a},o)}function l(t){t.onmessage=async t=>{const l=t.data.port,i=t.data.message;if("ping"===i.type)e.call(l,{type:"pong"});else if("set"===i.type)try{const t=async function(){}.constructor;if("bare-mux-remote"===i.client.function)s=i.client.args[0],o=`bare-mux-remote (${i.client.args[1]})`;else{const e=new t(i.client.function),[a,n]=await e();s=new a(...i.client.args),o=n}console.log("set transport to ",s,o),e.call(l,{type:"set"})}catch(e){a(l,e,"set")}else if("get"===i.type)l.postMessage({type:"get",name:o});else if("fetch"===i.type)try{if(!s)throw c();if(s instanceof MessagePort)return void r(i,l);s.ready||await s.init(),await n(i,l,s)}catch(e){a(l,e,"fetch")}else if("websocket"===i.type)try{if(!s)throw c();if(s instanceof MessagePort)return void r(i,l);s.ready||await s.init(),await async function(t,a,n){const[s,o]=n.connect(new URL(t.websocket.url),t.websocket.protocols,t.websocket.requestHeaders,(a=>{e.call(t.websocket.channel,{type:"open",args:[a]})}),(a=>{a instanceof ArrayBuffer?e.call(t.websocket.channel,{type:"message",args:[a]},[a]):e.call(t.websocket.channel,{type:"message",args:[a]})}),((a,n)=>{e.call(t.websocket.channel,{type:"close",args:[a,n]})}),(a=>{e.call(t.websocket.channel,{type:"error",args:[a]})}));t.websocket.channel.onmessage=e=>{"data"===e.data.type?s(e.data.data):"close"===e.data.type&&o(e.data.closeCode,e.data.closeReason)},e.call(a,{type:"websocket"})}(i,l,s)}catch(e){a(l,e,"websocket")}}}new BroadcastChannel("bare-mux").postMessage({type:"refreshPort"}),self.onconnect=e=>{l(e.ports[0])},console.debug("bare-mux: running v2.1.7 (build c56d286)")}();
-//# sourceMappingURL=worker.js.map
+/**
+ * Optimized Bare-Mux Worker Logic
+ */
+!function() {
+    "use strict";
+
+    const post = MessagePort.prototype.postMessage;
+    let transport = null;
+    let transportName = "";
+    let streamSupport = null;
+
+    // Helper: Centralized Error Reporting
+    function reportError(port, err, context) {
+        console.error(`[Bare-Mux] Error in '${context}':`, err);
+        post.call(port, {
+            type: "error",
+            error: err instanceof Error ? err.message : String(err),
+            context
+        });
+    }
+
+    // Helper: Check for Transferable Stream Support
+    function checkStreamSupport() {
+        if (streamSupport !== null) return streamSupport;
+        try {
+            const { port1 } = new MessageChannel();
+            const stream = new ReadableStream();
+            post.call(port1, stream, [stream]);
+            streamSupport = true;
+        } catch (e) {
+            streamSupport = false;
+        }
+        return streamSupport;
+    }
+
+    async function handleFetch(msg, port, client) {
+        try {
+            const response = await client.request(
+                new URL(msg.fetch.remote),
+                msg.fetch.method,
+                msg.fetch.body,
+                msg.fetch.headers,
+                null
+            );
+
+            // If browser doesn't support transferring streams, buffer it to ArrayBuffer
+            if (!checkStreamSupport() && response.body instanceof ReadableStream) {
+                const resClone = new Response(response.body);
+                response.body = await resClone.arrayBuffer();
+            }
+
+            const transfer = (response.body instanceof ReadableStream || response.body instanceof ArrayBuffer) 
+                ? [response.body] 
+                : [];
+
+            post.call(port, { type: "fetch", fetch: response }, transfer);
+        } catch (err) {
+            reportError(port, err, "fetch");
+        }
+    }
+
+    function setupPort(port) {
+        port.onmessage = async (event) => {
+            const { port: targetPort, message: msg } = event.data;
+
+            switch (msg.type) {
+                case "ping":
+                    post.call(targetPort, { type: "pong" });
+                    break;
+
+                case "get":
+                    post.call(targetPort, { type: "get", name: transportName });
+                    break;
+
+                case "set":
+                    try {
+                        if (msg.client.function === "bare-mux-remote") {
+                            transport = msg.client.args[0];
+                            transportName = `bare-mux-remote (${msg.client.args[1]})`;
+                        } else {
+                            // Use a more secure and readable way to init transport
+                            const factory = new Function(`return (${msg.client.function})`)();
+                            const [TransportClass, name] = await factory();
+                            transport = new TransportClass(...msg.client.args);
+                            transportName = name;
+                        }
+                        
+                        console.debug("[Bare-Mux] Transport set to:", transportName);
+                        post.call(targetPort, { type: "set" });
+                    } catch (err) {
+                        reportError(targetPort, err, "set");
+                    }
+                    break;
+
+                case "fetch":
+                case "websocket":
+                    if (!transport) {
+                        reportError(targetPort, "No BareTransport set.", msg.type);
+                        return;
+                    }
+
+                    // Handle nested MessagePort transports
+                    if (transport instanceof MessagePort) {
+                        const transferables = [targetPort];
+                        if (msg.fetch?.body) transferables.push(msg.fetch.body);
+                        if (msg.websocket?.channel) transferables.push(msg.websocket.channel);
+                        
+                        post.call(transport, { message: msg, port: targetPort }, transferables);
+                        return;
+                    }
+
+                    // Standard Transport Object logic
+                    try {
+                        if (!transport.ready) await transport.init();
+                        
+                        if (msg.type === "fetch") {
+                            await handleFetch(msg, targetPort, transport);
+                        } else {
+                            // WebSocket Logic
+                            const [send, close] = transport.connect(
+                                new URL(msg.websocket.url),
+                                msg.websocket.protocols,
+                                msg.websocket.requestHeaders,
+                                (onOpen) => post.call(msg.websocket.channel, { type: "open", args: [onOpen] }),
+                                (onMsg) => {
+                                    const t = onMsg instanceof ArrayBuffer ? [onMsg] : [];
+                                    post.call(msg.websocket.channel, { type: "message", args: [onMsg] }, t);
+                                },
+                                (code, reason) => post.call(msg.websocket.channel, { type: "close", args: [code, reason] }),
+                                (onErr) => post.call(msg.websocket.channel, { type: "error", args: [onErr] })
+                            );
+
+                            msg.websocket.channel.onmessage = (e) => {
+                                if (e.data.type === "data") send(e.data.data);
+                                else if (e.data.type === "close") close(e.data.closeCode, e.data.closeReason);
+                            };
+
+                            post.call(targetPort, { type: "websocket" });
+                        }
+                    } catch (err) {
+                        reportError(targetPort, err, msg.type);
+                    }
+                    break;
+            }
+        };
+    }
+
+    // Initialize
+    new BroadcastChannel("bare-mux").postMessage({ type: "refreshPort" });
+
+    self.onconnect = (e) => {
+        setupPort(e.ports[0]);
+    };
+
+    console.debug("Bare-Flint 1.0 running!");
+}();
