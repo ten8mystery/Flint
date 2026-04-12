@@ -493,22 +493,20 @@
     const $ = s => document.querySelector(s);
     const quoteDisplay = $('#quoteDisplay');
 
-    // --- FETCH RANDOM QUOTE ---
-    fetch('quotes.json')
+    fetch('https://cdn.jsdelivr.net/gh/ten8mystery/Flint@latest/data/quotes.json')
       .then(res => res.json())
       .then(quotes => {
         if (quotes && quotes.length > 0) {
           const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
           quoteDisplay.textContent = randomQuote;
         } else {
-          quoteDisplay.textContent = "Welcome to privacy.";
+          quoteDisplay.textContent = "Quote failed to load :(";
         }
       })
       .catch(err => {
         console.error("Failed to load quotes:", err);
         quoteDisplay.textContent = "Welcome to privacy.";
       });
-    // --------------------------
 
     window.onload = () => {
       if (localStorage.getItem('hideWelcomeModal') !== 'true') {
