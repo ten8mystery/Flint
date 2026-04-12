@@ -1,3 +1,3 @@
-<h1>Flint Browser</h1>
-<h2>Status</h2>
-not finished proxy yet sry
+<h1>Flint</h1>
+not finished 
+fvck ppl trying to skid my work
