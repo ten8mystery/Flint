@@ -148,7 +148,7 @@
     }
 
     .custom-checkbox i {
-      color: #111
+      color: #111;
       font-size: 11px;
       opacity: 0;
       transform: scale(0.5);
@@ -211,6 +211,8 @@
     .subtitle {
       font-size: 1.05rem;
       color: var(--text-soft);
+      text-align: center;
+      min-height: 1.5em; /* Prevents layout jumping before the quote loads */
     }
 
     .search-card {
@@ -422,7 +424,7 @@
   <div class="main-container">
     <div class="title-section">
       <h1 class="title">Flint</h1>
-      <div class="subtitle">Welcome to privacy.</div>
+      <div class="subtitle" id="quoteDisplay">Loading...</div>
     </div>
 
     <div class="search-card">
@@ -485,13 +487,28 @@
         <i class="fa-solid fa-trash-can" style="font-size: 0.7rem;"></i> Reset Site Data
       </a>
     </div>
-    
-      </div>
-    </div>
   </footer>
   
   <script>
     const $ = s => document.querySelector(s);
+    const quoteDisplay = $('#quoteDisplay');
+
+    // --- FETCH RANDOM QUOTE ---
+    fetch('quotes.json')
+      .then(res => res.json())
+      .then(quotes => {
+        if (quotes && quotes.length > 0) {
+          const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+          quoteDisplay.textContent = randomQuote;
+        } else {
+          quoteDisplay.textContent = "Welcome to privacy.";
+        }
+      })
+      .catch(err => {
+        console.error("Failed to load quotes:", err);
+        quoteDisplay.textContent = "Welcome to privacy.";
+      });
+    // --------------------------
 
     window.onload = () => {
       if (localStorage.getItem('hideWelcomeModal') !== 'true') {
