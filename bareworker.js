@@ -1,6 +1,4 @@
-/**
- * Optimized Bare-Mux Worker Logic
- */
+
 !function() {
     "use strict";
 
@@ -9,7 +7,6 @@
     let transportName = "";
     let streamSupport = null;
 
-    // Helper: Centralized Error Reporting
     function reportError(port, err, context) {
         console.error(`[Bare-Mux] Error in '${context}':`, err);
         post.call(port, {
@@ -19,7 +16,6 @@
         });
     }
 
-    // Helper: Check for Transferable Stream Support
     function checkStreamSupport() {
         if (streamSupport !== null) return streamSupport;
         try {
@@ -43,7 +39,6 @@
                 null
             );
 
-            // If browser doesn't support transferring streams, buffer it to ArrayBuffer
             if (!checkStreamSupport() && response.body instanceof ReadableStream) {
                 const resClone = new Response(response.body);
                 response.body = await resClone.arrayBuffer();
@@ -99,7 +94,6 @@
                         return;
                     }
 
-                    // Handle nested MessagePort transports
                     if (transport instanceof MessagePort) {
                         const transferables = [targetPort];
                         if (msg.fetch?.body) transferables.push(msg.fetch.body);
@@ -109,14 +103,12 @@
                         return;
                     }
 
-                    // Standard Transport Object logic
                     try {
                         if (!transport.ready) await transport.init();
                         
                         if (msg.type === "fetch") {
                             await handleFetch(msg, targetPort, transport);
                         } else {
-                            // WebSocket Logic
                             const [send, close] = transport.connect(
                                 new URL(msg.websocket.url),
                                 msg.websocket.protocols,
@@ -145,7 +137,6 @@
         };
     }
 
-    // Initialize
     new BroadcastChannel("bare-mux").postMessage({ type: "refreshPort" });
 
     self.onconnect = (e) => {
