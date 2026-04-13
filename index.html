@@ -13,15 +13,27 @@
             overflow: hidden; background: #080808; 
             color: rgba(255, 255, 255, 0.85); 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            -webkit-font-smoothing: antialiased;
         }
-        iframe { border: none; width: 100%; height: 100%; }
+        
+        /* FIX: Added pointer-events none so you can click through particles */
         #particles-js {
             position: fixed; width: 100%; height: 100%;
             background-color: #080808;
             z-index: 1;
             transition: opacity 0.5s ease;
+            pointer-events: none; 
         }
+
+        /* FIX: High z-index and explicit positioning for the iframe */
+        #main-frame { 
+            display: none; 
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: none;
+            z-index: 10; 
+        }
+
         #init-overlay {
             display: none;
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -31,46 +43,38 @@
             opacity: 0; transition: opacity 0.3s ease;
         }
         #init-overlay.active { display: flex; opacity: 1; }
+
         .init-box { 
             background: rgba(20, 20, 20, 0.6); 
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             padding: 40px; border-radius: 12px; 
             border: 1px solid rgba(255, 255, 255, 0.05); 
             max-width: 420px; text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            z-index: 2;
         }
-        .init-box h2 { font-weight: 300; margin-top: 0; color: #fff; font-size: 24px; letter-spacing: 0.5px; }
-        .init-box h2 span { color: #aaa; }
-        .init-box p { color: rgba(255, 255, 255, 0.6); font-size: 15px; line-height: 1.6; margin-bottom: 25px; }
         .btn-flint { 
             background: rgba(255, 255, 255, 0.9); 
             color: #000; border: none; 
             padding: 14px 30px; border-radius: 6px; 
-            cursor: pointer; font-size: 14px; font-weight: 600; text-transform: uppercase;
-            letter-spacing: 1px; transition: all 0.2s ease;
-            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+            cursor: pointer; font-size: 14px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px;
         }
-        .btn-flint:hover { 
-            background: #fff; transform: translateY(-1px); 
-            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15); 
-        }
-        .btn-flint i { margin-right: 8px; }
-        #main-frame { display: none; z-index: 10; }
     </style>
 </head>
 <body>
     <div id="particles-js"></div>
+    
     <div id="init-overlay">
         <div class="init-box">
             <h2>Flint <span>Loader</span></h2>
-            <p>Please click this button or allow popups, as it cloaks your tab!</p>
+            <p>Please click "Proceed" to load. This will open the site in a cloaked tab</p>
             <button class="btn-flint" onclick="activateInterface()">
                 <i class="fas fa-sign-in-alt"></i> Proceed
             </button>
         </div>
     </div>
+
     <iframe id="main-frame" src="window.html" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
+
     <script>
         window.onload = function() {
             particlesJS('particles-js', {
@@ -83,42 +87,46 @@
                     "line_linked": { "enable": true, "distance": 150, "color": "#222222", "opacity": 0.15, "width": 1 },
                     "move": { "enable": true, "speed": 1.2, "direction": "none", "random": true, "straight": false, "out_mode": "out" }
                 },
-                "interactivity": {
-                    "detect_on": "canvas",
-                    "events": { "onhover": { "enable": true, "mode": "bubble" } },
-                    "modes": { "bubble": { "distance": 200, "size": 3, "duration": 2, "opacity": 0.8, "speed": 3 } }
-                },
+                "interactivity": { "detect_on": "canvas", "events": { "onhover": { "enable": false } } },
                 "retina_detect": true
             });
 
             const urlParams = new URLSearchParams(window.location.search);
-            if (!urlParams.has('cloaked')) {
-                const tempWin = window.open('about:blank', '_blank');
-                if (!tempWin) {
-                    document.getElementById('init-overlay').classList.add('active');
-                } else {
-                    tempWin.close();
-                    activateInterface();
-                }
+            
+            if (urlParams.has('cloaked')) {
+                // CLOAKED MODE: Show iframe, kill the overlay
+                document.getElementById('main-frame').style.display = 'block';
+                document.getElementById('init-overlay').style.display = 'none';
+                document.getElementById('particles-js').style.opacity = '0.2';
             } else {
-                const frame = document.getElementById('main-frame');
-                frame.style.display = 'block';
-                document.getElementById('particles-js').style.opacity = '0.3'; 
+                // NORMAL MODE: Show the click-to-proceed box
+                document.getElementById('init-overlay').classList.add('active');
             }
         };
 
         function activateInterface() {
             const win = window.open('about:blank', '_blank');
-            if (!win) return;
+            if (!win) {
+                alert("Popup blocked! Please allow popups to use the cloaking feature.");
+                return;
+            }
+
             win.document.title = 'Google Drive';
             const link = win.document.createElement('link');
             link.rel = 'icon';
             link.href = 'https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png';
             win.document.head.appendChild(link);
+
             const iframe = win.document.createElement('iframe');
-            iframe.src = window.location.href + "?cloaked=true";
+            // Clean the URL to avoid double-params
+            const cleanUrl = window.location.href.split('?')[0];
+            iframe.src = cleanUrl + "?cloaked=true";
             iframe.style.cssText = "position:fixed;top:0;left:0;bottom:0;right:0;width:100%;height:100%;border:none;margin:0;padding:0;overflow:hidden;z-index:999999;";
+            
+            win.document.body.style.margin = "0";
             win.document.body.appendChild(iframe);
+
+            // Redirect this tab to something "safe"
             window.location.replace('https://classroom.google.com');
         }
     </script>
