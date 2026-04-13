@@ -113,7 +113,7 @@
 
     <script>
         window.onload = function() {
-            // Initialize particles
+            print("digbick")
             particlesJS('particles-js', {
                 "particles": {
                     "number": { "value": 50, "density": { "enable": true, "value_area": 1200 } },
@@ -131,15 +131,12 @@
             const urlParams = new URLSearchParams(window.location.search);
             
             if (urlParams.has('cloaked')) {
-                // CLOAKED MODE: Show iframe, kill the overlay
                 document.getElementById('main-frame').style.display = 'block';
                 document.getElementById('init-overlay').style.display = 'none';
                 document.getElementById('particles-js').style.opacity = '0.1';
             } else {
-                // NORMAL MODE: Show loader and attempt auto-launch
                 document.getElementById('init-overlay').classList.add('active');
                 
-                // Small delay to let the animation play before attempting redirect
                 setTimeout(() => {
                     attemptAutoLaunch();
                 }, 800);
@@ -150,14 +147,11 @@
             const win = window.open('about:blank', '_blank');
             
             if (!win || win.closed || typeof win.closed == 'undefined') {
-                // The browser blocked the automatic popup
                 document.getElementById('loading-spinner').style.display = 'none';
                 document.getElementById('launch-text').innerHTML = "Auto-launch blocked by browser.<br><br><span style='color: #fafafa; font-weight: 500;'>Click anywhere to proceed.</span>";
                 
-                // Convert the whole screen into a trigger button
                 document.getElementById('init-overlay').addEventListener('click', forceLaunch);
             } else {
-                // Auto-launch was successful
                 setupCloak(win);
             }
         }
