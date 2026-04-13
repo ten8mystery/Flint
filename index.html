@@ -5,78 +5,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flint</title>
     <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #111; color: white; font-family: sans-serif; }
+        body, html { 
+            margin: 0; padding: 0; height: 100%; width: 100%; 
+            overflow: hidden; background: #080808; 
+            color: rgba(255, 255, 255, 0.85); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
         iframe { border: none; width: 100%; height: 100%; }
-
-        #blocker-notice {
-            display: none; /* Hidden by default */
+        #particles-js {
+            position: fixed; width: 100%; height: 100%;
+            background-color: #080808;
+            z-index: 1;
+            transition: opacity 0.5s ease;
+        }
+        #init-overlay {
+            display: none;
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: linear-gradient(135deg, rgba(16, 16, 16, 0.95), rgba(8, 8, 8, 0.98));
             z-index: 99999;
             flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; padding: 20px;
+            opacity: 0; transition: opacity 0.3s ease;
         }
-        .popup-box { background: #222; padding: 30px; border-radius: 12px; border: 1px solid #444; max-width: 400px; }
-        .btn { background: #4a90e2; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 20px; }
-        .btn:hover { background: #357abd; }
+        #init-overlay.active { display: flex; opacity: 1; }
+        .init-box { 
+            background: rgba(20, 20, 20, 0.6); 
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            padding: 40px; border-radius: 12px; 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+            max-width: 420px; text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 2;
+        }
+        .init-box h2 { font-weight: 300; margin-top: 0; color: #fff; font-size: 24px; letter-spacing: 0.5px; }
+        .init-box h2 span { color: #aaa; }
+        .init-box p { color: rgba(255, 255, 255, 0.6); font-size: 15px; line-height: 1.6; margin-bottom: 25px; }
+        .btn-flint { 
+            background: rgba(255, 255, 255, 0.9); 
+            color: #000; border: none; 
+            padding: 14px 30px; border-radius: 6px; 
+            cursor: pointer; font-size: 14px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 1px; transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+        }
+        .btn-flint:hover { 
+            background: #fff; transform: translateY(-1px); 
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15); 
+        }
+        .btn-flint i { margin-right: 8px; }
+        #main-frame { display: none; z-index: 10; }
     </style>
 </head>
 <body>
-
-    <div id="blocker-notice">
-        <div class="popup-box">
-            <h2>Launch Flint</h2>
-            <p>Your browser blocked the automatic <b>about:blank</b> cloak. Click below to launch Flint in a hidden tab.</p>
-            <button class="btn" onclick="createCloak()">Launch Flint</button>
+    <div id="particles-js"></div>
+    <div id="init-overlay">
+        <div class="init-box">
+            <h2>Flint <span>Loader</span></h2>
+            <p>Please click this button or allow popups, as it cloaks your tab!</p>
+            <button class="btn-flint" onclick="activateInterface()">
+                <i class="fas fa-sign-in-alt"></i> Proceed
+            </button>
         </div>
     </div>
-
     <iframe id="main-frame" src="window.html" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
-
     <script>
-        function createCloak() {
-            const win = window.open('about:blank', '_blank');
-            
-            if (!win) {
-                // If we reach here, the click failed or auto-run failed
-                document.getElementById('blocker-notice').style.display = 'flex';
-                return false;
-            }
+        window.onload = function() {
+            particlesJS('particles-js', {
+                "particles": {
+                    "number": { "value": 40, "density": { "enable": true, "value_area": 1200 } },
+                    "color": { "value": "#444444" },
+                    "shape": { "type": "circle" },
+                    "opacity": { "value": 0.4, "random": true },
+                    "size": { "value": 2, "random": true },
+                    "line_linked": { "enable": true, "distance": 150, "color": "#222222", "opacity": 0.15, "width": 1 },
+                    "move": { "enable": true, "speed": 1.2, "direction": "none", "random": true, "straight": false, "out_mode": "out" }
+                },
+                "interactivity": {
+                    "detect_on": "canvas",
+                    "events": { "onhover": { "enable": true, "mode": "bubble" } },
+                    "modes": { "bubble": { "distance": 200, "size": 3, "duration": 2, "opacity": 0.8, "speed": 3 } }
+                },
+                "retina_detect": true
+            });
 
-            // Set disguise
+            const urlParams = new URLSearchParams(window.location.search);
+            if (!urlParams.has('cloaked')) {
+                const tempWin = window.open('about:blank', '_blank');
+                if (!tempWin) {
+                    document.getElementById('init-overlay').classList.add('active');
+                } else {
+                    tempWin.close();
+                    activateInterface();
+                }
+            } else {
+                const frame = document.getElementById('main-frame');
+                frame.style.display = 'block';
+                document.getElementById('particles-js').style.opacity = '0.3'; 
+            }
+        };
+
+        function activateInterface() {
+            const win = window.open('about:blank', '_blank');
+            if (!win) return;
             win.document.title = 'Google Drive';
             const link = win.document.createElement('link');
             link.rel = 'icon';
             link.href = 'https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png';
             win.document.head.appendChild(link);
-
-            // Inject Iframe
             const iframe = win.document.createElement('iframe');
-            iframe.src = window.location.href + "?cloaked=true"; // Flag to stop loops
+            iframe.src = window.location.href + "?cloaked=true";
             iframe.style.cssText = "position:fixed;top:0;left:0;bottom:0;right:0;width:100%;height:100%;border:none;margin:0;padding:0;overflow:hidden;z-index:999999;";
-            
             win.document.body.appendChild(iframe);
-
-            // Redirect original tab
             window.location.replace('https://classroom.google.com');
-            return true;
         }
-
-        // Logic to run on page load
-        window.onload = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            
-            // If the URL DOES NOT have "?cloaked=true", try to cloak it
-            if (!urlParams.has('cloaked')) {
-                const success = createCloak();
-                if (!success) {
-                    // Hide the main frame so they don't see the site until they click
-                    document.getElementById('main-frame').style.display = 'none';
-                    document.getElementById('blocker-notice').style.display = 'flex';
-                }
-            }
-        };
     </script>
 </body>
 </html>
