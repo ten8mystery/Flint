@@ -1,0 +1,31 @@
+name: Flint Ghost Sync
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  sync-job:
+    # Only run if the issue has your secret label
+    if: contains(github.event.issue.labels.*.name, 'admin-update')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Run Sync Script
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: python sync_flint.py
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "Flint-Bot"
+          git config --global user.email "bot@flint.dev"
+          git add games.json apps.json quotes.json
+          git commit -m "Automated Sync: ${{ github.event.issue.title }}"
+          git push
