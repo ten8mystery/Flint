@@ -1,33 +1,34 @@
 import json
 import os
-import re
 
-issue_body = os.getenv('ISSUE_BODY', '')
+payload_str = os.getenv('PAYLOAD', '{}')
+payload = json.loads(payload_str)
 
-def get_field(field_name):
-    match = re.search(f"{field_name}:\\s*(.*)", issue_body)
-    return match.group(1).strip() if match else None
+action_type = payload.get('type')
 
-if "ADD_GAME" in issue_body or "ADD_APP" in issue_body:
-    file_target = 'games.json' if "ADD_GAME" in issue_body else 'apps.json'
+if action_type in ['GAME', 'APP']:
+    file_path = f'data/{"games.json" if action_type == "GAME" else "apps.json"}'
     
     new_entry = {
-        "name": get_field("NAME"),
-        "src": get_field("SRC"),
-        "image": get_field("IMAGE"),
-        "description": get_field("DESC")
+        "name": payload.get('name'),
+        "src": payload.get('src'),
+        "image": payload.get('image'),
+        "description": payload.get('desc')
     }
 
-    with open(file_target, 'r') as f:
+    with open(file_path, 'r') as f:
         data = json.load(f)
     data.append(new_entry)
-    with open(file_target, 'w') as f:
+    with open(file_path, 'w') as f:
         json.dump(data, f, indent=2)
 
-elif "ADD_QUOTE" in issue_body:
-    new_quote = get_field("QUOTE")
-    with open('quotes.json', 'r') as f:
+# 3. Logic for Quotes
+elif action_type == 'QUOTE':
+    file_path = 'data/quotes.json'
+    new_quote = payload.get('quote')
+    
+    with open(file_path, 'r') as f:
         data = json.load(f)
     data.append(new_quote)
-    with open('quotes.json', 'w') as f:
+    with open(file_path, 'w') as f:
         json.dump(data, f, indent=2)
