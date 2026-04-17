@@ -50,7 +50,6 @@
             z-index: 99999;
             flex-direction: column; align-items: center; justify-content: center;
             opacity: 0; transition: opacity 0.3s ease;
-            cursor: pointer;
         }
 
         #init-overlay.active { display: flex; opacity: 1; }
@@ -96,6 +95,38 @@
         }
         
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        .button-group {
+            display: none; /* Hidden until popup is blocked */
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-light);
+            color: var(--text);
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
     </style>
 </head>
 <body>
@@ -105,7 +136,12 @@
         <div class="init-box">
             <div class="spinner" id="loading-spinner"></div>
             <h2 class="title">Flint Loader</h2>
-            <p class="subtitle" id="launch-text">Initializing secure environment...</p>
+            <p class="subtitle" id="launch-text">Starting up Flint...</p>
+            
+            <div class="button-group" id="action-buttons">
+                <button class="btn btn-primary" onclick="forceLaunch()">Open in New Tab (about:blank)</button>
+                <button class="btn" onclick="launchInCurrentTab()">Open Here (Cloaked)</button>
+            </div>
         </div>
     </div>
 
@@ -147,9 +183,8 @@
             
             if (!win || win.closed || typeof win.closed == 'undefined') {
                 document.getElementById('loading-spinner').style.display = 'none';
-                document.getElementById('launch-text').innerHTML = "Auto-launch blocked by browser.<br><br><span style='color: #fafafa; font-weight: 500;'>Click anywhere to proceed.</span>";
-                
-                document.getElementById('init-overlay').addEventListener('click', forceLaunch);
+                document.getElementById('launch-text').innerHTML = "Auto-launch blocked by browser.<br><br><span style='color: #fafafa; font-weight: 500;'>Please choose a launch method:</span>";
+                document.getElementById('action-buttons').style.display = 'flex';
             } else {
                 setupCloak(win);
             }
@@ -160,8 +195,23 @@
             if (win) {
                 setupCloak(win);
             } else {
-                alert("Popup strictly blocked! Please allow popups for this site.");
+                alert("Popup strictly blocked! Please allow popups for this site or use the 'Open Here' option.");
             }
+        }
+
+        function launchInCurrentTab() {
+            document.title = 'Google Drive';
+            let link = document.querySelector("link[rel~='icon']");
+            if (!link) {
+                link = document.createElement('link');
+                link.rel = 'icon';
+                document.head.appendChild(link);
+            }
+            link.href = 'https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png';
+
+            document.getElementById('main-frame').style.display = 'block';
+            document.getElementById('init-overlay').style.display = 'none';
+            document.getElementById('particles-js').style.opacity = '0.1';
         }
 
         function setupCloak(win) {
@@ -179,7 +229,6 @@
             win.document.body.style.margin = "0";
             win.document.body.appendChild(iframe);
 
-            // Redirect this original tab
             window.location.replace('https://classroom.google.com');
         }
     </script>
