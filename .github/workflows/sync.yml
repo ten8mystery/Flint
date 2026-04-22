@@ -1,4 +1,4 @@
-name: Flint Ghost Sync
+name: Flint Admin
 on:
   repository_dispatch:
     types: [admin_sync]
@@ -18,7 +18,7 @@ jobs:
       - name: Run Sync Script
         env:
           PAYLOAD: ${{ toJson(github.event.client_payload) }}
-        run: python sync_flint.py
+        run: python admin.py
 
       - name: Commit and Push
         run: |
