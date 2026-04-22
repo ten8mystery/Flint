@@ -22,7 +22,6 @@ if action_type in ['GAME', 'APP']:
     with open(file_path, 'w') as f:
         json.dump(data, f, indent=2)
 
-# 3. Logic for Quotes
 elif action_type == 'QUOTE':
     file_path = 'data/quotes.json'
     new_quote = payload.get('quote')
