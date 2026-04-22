@@ -46,7 +46,7 @@
       color: var(--text);
       overflow-x: hidden;
       overflow-y: auto;
-      background-color: var(--bg-gradient-end);
+      background-color: var(--bg-gradient-end); /* Fallback color */
     }
 
     #particles {
@@ -251,7 +251,7 @@
       background: #000;
       box-shadow: var(--shadow-soft);
     }
-    
+
     .shortcut {
   content-visibility: auto;
   contain-intrinsic-size: 140px;
@@ -268,7 +268,7 @@
       <h1 class="title">Apps</h1>
       <div class="subtitle"></div>
     </div>
-    
+
     <div class="search-card">
       <form class="search-box" id="searchForm" autocomplete="off" onsubmit="event.preventDefault();">
         <i class="fa-solid fa-magnifying-glass"></i>
@@ -299,7 +299,7 @@ const iframeContainer = $('#iframeContainer');
 
 let allGames = [];
 let renderedStart = 0;
-const BATCH_SIZE = 24;
+const BATCH_SIZE = 65;
 let currentIframe = null;
 
 function createFreshIframe() {
@@ -313,7 +313,7 @@ function createFreshIframe() {
 
 const priorityGames = ["[!] REQUEST GAME", "", ""];
 
-fetch('https://raw.githubusercontent.com/ten8mystery/Flint/main/data/apps.json')
+fetch('https://cdn.jsdelivr.net/gh/ten8mystery/Flint@main/data/games.json')
   .then(res => res.json())
   .then(data => {
     data.sort((a, b) => {
@@ -324,24 +324,21 @@ fetch('https://raw.githubusercontent.com/ten8mystery/Flint/main/data/apps.json')
       if (bi !== -1) return 1;
       return a.name.localeCompare(b.name);
     });
-    
-    // ✅ STORE GAMES
+
     allGames = data;
 
-    // ✅ FIRST RENDER
     renderBatch(true);
   });
 
 window.addEventListener('scroll', () => {
   const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 500;
-  
+
   // Only load more batches if the search bar is empty
   if (nearBottom && searchInput.value.trim() === '') {
     renderBatch();
   }
 });
 
-// ✅ HELPER: Create and append a single game card
 function appendGame(game) {
   const a = document.createElement('a');
   a.className = 'shortcut';
