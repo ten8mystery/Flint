@@ -313,7 +313,7 @@ function createFreshIframe() {
 
 const priorityGames = ["[!] REQUEST GAME", "", ""];
 
-fetch('https://cdn.jsdelivr.net/gh/ten8mystery/Flint@main/data/games.json')
+fetch('https://cdn.jsdelivr.net/gh/ten8mystery/Flint@main/data/apps.json')
   .then(res => res.json())
   .then(data => {
     data.sort((a, b) => {
